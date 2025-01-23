@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Ensure you have this imported
+import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
+import 'package:renewa/screens/newFeatures/plantpurchase.dart';
 
 class GreenSnapCampaignScreen extends StatelessWidget {
   const GreenSnapCampaignScreen({super.key, required this.campaign});
@@ -174,23 +176,43 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => CampaignQuestScreen(
-                        campaign: campaign,
-                        collectionName: campaign.collectionName!,
-                      ),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                     ),
-                  );
-                },
-                label: const Text('View Quest'),
-                icon: const Icon(Icons.arrow_forward),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => CampaignQuestScreen(
+                            campaign: campaign,
+                            collectionName: campaign.collectionName!,
+                          ),
+                        ),
+                      );
+                    },
+                    label: const Text('View Quest'),
+                    icon: const Icon(Icons.arrow_forward),
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 74, 116, 66),
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PlantPurchaseScreen()
+                        ),
+                      );
+                    },
+                    label: const Text('Purchase Saplings'),
+                    icon: const Icon(Icons.shopping_cart),
+                  ),
+                ],
               ),
             ],
           ),
@@ -202,8 +224,8 @@ class GreenSnapCampaignScreen extends StatelessWidget {
  
   Future<Map<String, dynamic>> _fetchCampaignDetails() async {
     final timeQuery = await FirebaseFirestore.instance
-        .collection('submissions')
-        .where('campaign_id', isEqualTo: "GreenSnap")
+        .collection('Campaigns')
+        .where('name', isEqualTo: "GreenSnap")
         .get();
         DateTime? startDate;
         DateTime? endDate ;
@@ -211,11 +233,14 @@ class GreenSnapCampaignScreen extends StatelessWidget {
         if(timeQuery.docs.isNotEmpty){
           final doc=timeQuery.docs.first;
           startDate=(doc['start_date'] as Timestamp).toDate();
+          
+          
           endDate=(doc['end_date'] as Timestamp).toDate();
         }
 
         startDate ??= DateTime.now();
         endDate ??= DateTime.now();
+        print(startDate);
     
     // Calculate campaign status
     String status;

@@ -10,6 +10,7 @@ import 'package:renewa/screens/thank_you.dart';
 import 'package:renewa/widgets/image_input.dart';
 import 'package:renewa/widgets/location_input.dart';
 import 'package:path/path.dart' as path;
+import 'package:uuid/uuid.dart';
 
 class CampaignUploadScreen extends StatefulWidget {
   const CampaignUploadScreen({super.key, required this.campaign});
@@ -100,14 +101,22 @@ class _CampaignUploadScreenState extends State<CampaignUploadScreen> {
           .child('campaign_images/${widget.campaign.title}/$fileName');
       await storageRef.putFile(_selectedImage!);
       final imageUrl = await storageRef.getDownloadURL();
+      var uuid=const Uuid().v4();
+      final campaignTitle=widget.campaign.title;
+      final datetime=DateTime.now();
+      
 
       await FirebaseFirestore.instance
-          .collection(widget.campaign.title)
-          .add({
-        'imageUrl': imageUrl,
+          .collection('Submissions')
+          .doc(uuid)
+          .set({
+            'campaign_id': campaignTitle,
+            'created_at': datetime,
+        'photo_url': imageUrl,
+        'status':"pending",
         'location': _pickedLocation!.address,
         'description': _descriptionController.text,
-        'username': username, // Use the fetched username
+        'user_id': username, // Use the fetched username
       });
 
       Navigator.of(context)
