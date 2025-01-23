@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -37,38 +38,47 @@ class _CampaignUploadScreenState extends State<CampaignUploadScreen> {
     _checkIfAlreadySubmitted();
   }
 
-  Future<void> _checkIfAlreadySubmitted() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
+Future<void> _checkIfAlreadySubmitted() async {
+  final User? user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return;
+  }
 
-    final userEmail = user.email;
-    final userSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: userEmail)
-        .limit(1)
+  final userEmail = user.email;
+  final userSnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .where('email', isEqualTo: userEmail)
+      .limit(1)
+      .get();
+
+  if (userSnapshot.docs.isNotEmpty) {
+    final username = userSnapshot.docs.first['username'];
+
+    // Fetch all submissions for the campaign
+    final campaignSubmissions = await FirebaseFirestore.instance
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: widget.campaign.title)
+        .where('user_id', isEqualTo: username)
         .get();
 
-    if (userSnapshot.docs.isNotEmpty) {
-      final username = userSnapshot.docs.first['username'];
-      final campaignSnapshot = await FirebaseFirestore.instance
-          .collection(widget.campaign.title)
-          .where('username', isEqualTo: username)
-          .limit(1)
-          .get();
+    if (campaignSubmissions.docs.isNotEmpty) {
+      // Check if any document has a 'pending' status
+      final pendingSubmission = campaignSubmissions.docs
+          .firstWhereOrNull((doc) => doc['status'] == 'pending');
 
-      if (campaignSnapshot.docs.isNotEmpty) {
-        final data = campaignSnapshot.docs.first.data();
+      if (pendingSubmission != null) {
+        final data = pendingSubmission.data();
         setState(() {
           _isAlreadySubmitted = true;
-          _existingImageUrl = data['imageUrl'];
+          _existingImageUrl = data['photo_url'];
           _existingLocation = data['location'];
           _existingDescription = data['description'];
         });
       }
     }
   }
+}
+
 
   Future<void> _uploadData() async {
     if (_selectedImage == null || _pickedLocation == null || !_isCheckboxChecked) {
