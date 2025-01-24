@@ -13,24 +13,10 @@ class FeedScreen extends StatelessWidget {
 
     final likeSnapshot = await likeRef.get();
     if (likeSnapshot.exists) {
-      await likeRef.delete();
+      await likeRef.delete(); // Unlike the post
     } else {
-      await likeRef.set({'timestamp': FieldValue.serverTimestamp()});
+      await likeRef.set({'timestamp': FieldValue.serverTimestamp()}); // Like the post
     }
-  }
-
-  Future<void> _addComment(String submissionId, String comment, String userId, String userName) async {
-    final commentRef = FirebaseFirestore.instance
-        .collection('Submissions')
-        .doc(submissionId)
-        .collection('Comments');
-
-    await commentRef.add({
-      'comment': comment,
-      'user_id': userId,
-      'user_name': userName,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
   }
 
   @override
@@ -77,8 +63,10 @@ class FeedScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Location: $location',
-                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Location: $location',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           Text('Posted by: $userName'),
                           const SizedBox(height: 8),
                           StreamBuilder<QuerySnapshot>(
@@ -92,7 +80,21 @@ class FeedScreen extends StatelessWidget {
                                 return const Text('Likes: 0');
                               }
                               final likeCount = likeSnapshot.data!.docs.length;
-                              return Text('Likes: $likeCount');
+                              final isLiked = likeSnapshot.data!.docs
+                                  .any((doc) => doc.id == userId);
+
+                              return Row(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.favorite,
+                                      color: isLiked ? const Color.fromARGB(255, 243, 33, 33) : Colors.grey,
+                                    ),
+                                    onPressed: () => _addLike(submissionId, userId),
+                                  ),
+                                  Text('Likes: $likeCount'),
+                                ],
+                              );
                             },
                           ),
                           const SizedBox(height: 8),
@@ -119,33 +121,34 @@ class FeedScreen extends StatelessWidget {
                             },
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.thumb_up),
-                                onPressed: () => _addLike(submissionId, userId),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.comment),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: const Text('Add a Comment'),
-                                      content: TextField(
-                                        decoration: const InputDecoration(
-                                          hintText: 'Enter your comment',
-                                        ),
-                                        onSubmitted: (value) {
-                                          _addComment(submissionId, value, userId, userName);
-                                          Navigator.of(ctx).pop();
-                                        },
-                                      ),
+                          IconButton(
+                            icon: const Icon(Icons.comment),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Add a Comment'),
+                                  content: TextField(
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter your comment',
                                     ),
-                                  );
-                                },
-                              ),
-                            ],
+                                    onSubmitted: (value) {
+                                      FirebaseFirestore.instance
+                                          .collection('Submissions')
+                                          .doc(submissionId)
+                                          .collection('Comments')
+                                          .add({
+                                        'comment': value,
+                                        'user_id': userId,
+                                        'user_name': userName,
+                                        'timestamp': FieldValue.serverTimestamp(),
+                                      });
+                                      Navigator.of(ctx).pop();
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

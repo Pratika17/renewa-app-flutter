@@ -22,33 +22,42 @@ class GreenSnapCampaignScreen extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
+        
         title: Text(campaign.title,
             style: const TextStyle(fontWeight: FontWeight.bold)),
               actions: [
-    IconButton(
-      icon: const Text(
-        'Feed',
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
-      ),
-      onPressed: () {
-        // Add navigation or logic for the Feed button here
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const FeedScreen(), // Replace with your Feed screen
-          ),
-        );
-      },
+    
+    ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.black, // Button background color
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(30), // Optional: for rounded corners
     ),
+  ),
+  onPressed: () {
+    // Add navigation or logic for the Feed button here
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const FeedScreen(), // Replace with your Feed screen
+      ),
+    );
+  },
+  child: const Text(
+    'Feed',
+    style: TextStyle(
+      color: Colors.white, // Text color
+      fontWeight: FontWeight.bold,
+      fontSize: 16, // Font size
+    ),
+  ),
+),
+
   ],
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(30.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -177,43 +186,45 @@ class GreenSnapCampaignScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Row(
-                children: [
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CampaignQuestScreen(
-                            campaign: campaign,
-                            collectionName: campaign.collectionName!,
-                          ),
-                        ),
-                      );
-                    },
-                    label: const Text('View Quest'),
-                    icon: const Icon(Icons.arrow_forward),
-                  ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 74, 116, 66),
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => PlantPurchaseScreen()
-                        ),
-                      );
-                    },
-                    label: const Text('Purchase Saplings'),
-                    icon: const Icon(Icons.shopping_cart),
-                  ),
-                ],
-              ),
+  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjust spacing
+  children: [
+    ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => CampaignQuestScreen(
+              campaign: campaign,
+              collectionName: campaign.collectionName!,
+            ),
+          ),
+        );
+      },
+      label: const Text('View Quest'),
+      icon: const Icon(Icons.arrow_forward),
+    ),
+    ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromARGB(255, 74, 116, 66),
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => PlantPurchaseScreen(),
+          ),
+        );
+      },
+      label: const Text('Purchase Saplings'),
+      icon: const Icon(Icons.shopping_cart),
+
+    ),
+  ],
+),
+
             ],
           ),
         ),
