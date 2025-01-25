@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:renewa/screens/newFeatures/plantdetails.dart';
 
 class PlantPurchaseScreen extends StatelessWidget {
   const PlantPurchaseScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text("Plants Nursery"),
@@ -37,7 +39,17 @@ class PlantPurchaseScreen extends StatelessWidget {
             itemCount: plants.length,
             itemBuilder: (context, index) {
               final plant = plants[index].data() as Map<String, dynamic>;
-              return PlantCard(plant: plant);
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlantDetailScreen(plant: plant),
+                    ),
+                  );
+                },
+                child: PlantCard(plant: plant),
+              );
             },
           );
         },

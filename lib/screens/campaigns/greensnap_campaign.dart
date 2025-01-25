@@ -12,8 +12,6 @@ class GreenSnapCampaignScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -22,38 +20,37 @@ class GreenSnapCampaignScreen extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
-        
         title: Text(campaign.title,
             style: const TextStyle(fontWeight: FontWeight.bold)),
-              actions: [
-    
-    ElevatedButton(
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.black, // Button background color
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(30), // Optional: for rounded corners
-    ),
-  ),
-  onPressed: () {
-    // Add navigation or logic for the Feed button here
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const FeedScreen(), // Replace with your Feed screen
-      ),
-    );
-  },
-  child: const Text(
-    'Feed',
-    style: TextStyle(
-      color: Colors.white, // Text color
-      fontWeight: FontWeight.bold,
-      fontSize: 16, // Font size
-    ),
-  ),
-),
-
-  ],
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black, // Button background color
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(30), // Optional: for rounded corners
+              ),
+            ),
+            onPressed: () {
+              // Add navigation or logic for the Feed button here
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const FeedScreen(), // Replace with your Feed screen
+                ),
+              );
+            },
+            child: const Text(
+              'Feed',
+              style: TextStyle(
+                color: Colors.white, // Text color
+                fontWeight: FontWeight.bold,
+                fontSize: 16, // Font size
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -63,12 +60,32 @@ class GreenSnapCampaignScreen extends StatelessWidget {
             children: [
               _buildImageSection(),
               const SizedBox(height: 16),
-              Text(
-                campaign.title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  Text(
+                    campaign.title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 74, 116, 66),
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PlantPurchaseScreen(),
+                        ),
+                      );
+                    },
+                    label: const Text('Purchase plants'),
+                    icon: const Icon(Icons.shopping_cart),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Text(
@@ -83,7 +100,7 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-     const SizedBox(height: 16),
+              const SizedBox(height: 16),
               FutureBuilder<Map<String, dynamic>>(
                 future: _fetchCampaignDetails(),
                 builder: (context, snapshot) {
@@ -108,7 +125,7 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                   }
                 },
               ),
-            ],          
+            ],
           ),
         ),
       ),
@@ -133,9 +150,8 @@ class GreenSnapCampaignScreen extends StatelessWidget {
     );
   }
 
-  
-  Widget _buildCampaignDetails(BuildContext context, String status,
-      int participants, int credits) {
+  Widget _buildCampaignDetails(
+      BuildContext context, String status, int participants, int credits) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(35.0),
       child: Container(
@@ -186,45 +202,29 @@ class GreenSnapCampaignScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjust spacing
-  children: [
-    ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      onPressed: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => CampaignQuestScreen(
-              campaign: campaign,
-              collectionName: campaign.collectionName!,
-            ),
-          ),
-        );
-      },
-      label: const Text('View Quest'),
-      icon: const Icon(Icons.arrow_forward),
-    ),
-    ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromARGB(255, 74, 116, 66),
-        foregroundColor: Colors.white,
-      ),
-      onPressed: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => PlantPurchaseScreen(),
-          ),
-        );
-      },
-      label: const Text('Purchase Saplings'),
-      icon: const Icon(Icons.shopping_cart),
-
-    ),
-  ],
-),
-
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween, // Adjust spacing
+                children: [
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => CampaignQuestScreen(
+                            campaign: campaign,
+                            collectionName: campaign.collectionName!,
+                          ),
+                        ),
+                      );
+                    },
+                    label: const Text('View Quest'),
+                    icon: const Icon(Icons.arrow_forward),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -232,27 +232,25 @@ class GreenSnapCampaignScreen extends StatelessWidget {
     );
   }
 
- 
   Future<Map<String, dynamic>> _fetchCampaignDetails() async {
     final timeQuery = await FirebaseFirestore.instance
         .collection('Campaigns')
         .where('name', isEqualTo: "GreenSnap")
         .get();
-        DateTime? startDate;
-        DateTime? endDate ;
-        DateTime now = DateTime.now();
-        if(timeQuery.docs.isNotEmpty){
-          final doc=timeQuery.docs.first;
-          startDate=(doc['start_date'] as Timestamp).toDate();
-          
-          
-          endDate=(doc['end_date'] as Timestamp).toDate();
-        }
+    DateTime? startDate;
+    DateTime? endDate;
+    DateTime now = DateTime.now();
+    if (timeQuery.docs.isNotEmpty) {
+      final doc = timeQuery.docs.first;
+      startDate = (doc['start_date'] as Timestamp).toDate();
 
-        startDate ??= DateTime.now();
-        endDate ??= DateTime.now();
-        print(startDate);
-    
+      endDate = (doc['end_date'] as Timestamp).toDate();
+    }
+
+    startDate ??= DateTime.now();
+    endDate ??= DateTime.now();
+    print(startDate);
+
     // Calculate campaign status
     String status;
     if (now.isBefore(startDate)) {
