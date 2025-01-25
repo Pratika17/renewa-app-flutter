@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:renewa/data/campaigns_data.dart';
-import 'package:renewa/screens/campaigns/corporate.dart';
+
 import 'package:renewa/screens/campaigns/domestic.dart';
 
 class AquaConserveCampaignScreen extends StatelessWidget {
@@ -40,24 +40,17 @@ class AquaConserveCampaignScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   const Text(
+
                     'Featured Pathways',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   GridView.count(
-                    crossAxisCount: 2,
+                    crossAxisCount: 1,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      GestureDetector(
-                        onTap:(){ Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => CorporateScreen  (campaign: campaigns[1],)));},
-                        child: const PathwayCard(
-                          
-                          image: 'assets/images/corporate.png',
-                          title: 'Corporate',
-                        
-                        ), 
-                      ),
+                      
                       GestureDetector(
                         onTap:(){ Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DomesticScreen(campaign: campaigns[2],)));},
                         child: const PathwayCard(
