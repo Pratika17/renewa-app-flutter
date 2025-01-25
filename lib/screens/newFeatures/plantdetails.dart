@@ -48,10 +48,10 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
       // Order details to store
       final orderData = {
         "location": _locationController.text,
-        "delivery_date": _selectedDate?.toIso8601String(),
+        "delivery_date": _selectedDate?.toUtc(),
         "name": widget.plant["name"] ?? "Unknown Plant",
         "price": widget.plant["price"] ?? 0,
-        "order_placed": now.toIso8601String(),
+        "order_placed": now.toUtc(),
       };
 
       // Save to Firestore
@@ -135,7 +135,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: Color.fromARGB(255, 44, 96, 45),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -158,7 +158,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                     controller: _locationController,
                     decoration: InputDecoration(
                       hintText: "Enter your location",
-                      prefixIcon: const Icon(Icons.location_on, color: Colors.green),
+                      prefixIcon: const Icon(Icons.location_on, color: Color.fromARGB(255, 39, 95, 41)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Colors.grey),
@@ -183,7 +183,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                                 : DateFormat('dd MMM, yyyy').format(_selectedDate!),
                             style: const TextStyle(fontSize: 16, color: Colors.black54),
                           ),
-                          const Icon(Icons.calendar_today, color: Colors.green),
+                          const Icon(Icons.calendar_today, color: Color.fromARGB(255, 44, 109, 46)),
                         ],
                       ),
                     ),
@@ -201,7 +201,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                   const SizedBox(height: 8),
                   Text(
                     plant["careInstructions"] ??
-                        "No specific care instructions provided. Please follow general care guidelines.",
+                        ' • Keep plants in medium light locations, out of direct sunlight.\n • Natural light is best, but some plants can also thrive in office fluorescent light.\n • Plant soil should be kept moist at all time.\n • Be careful to avoid overwatering.\n • Do not allow plants to stand in water.\n • Avoid wetting plant leaves excessively.\n • A spray of water should help in case of flowering plants.\n • Plants should be kept in a cool spot (between 18-28Â°C).\n • Remove waste leaves and stems from time to time.',
                     style: const TextStyle(fontSize: 16, color: Colors.black87),
                   ),
                 ],
@@ -228,7 +228,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
         ),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green.shade700,
+            backgroundColor: const Color.fromARGB(255, 39, 86, 41),
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -237,7 +237,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
           onPressed: _saveOrder,
           child: const Text(
             "Buy Now",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
       ),

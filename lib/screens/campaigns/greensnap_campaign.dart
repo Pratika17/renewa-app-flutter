@@ -181,8 +181,6 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text('Region - ${campaign.region}'),
-              const SizedBox(height: 8),
               const Text('Plant saplings and receive amazing rewards!'),
               const SizedBox(height: 8),
               Row(

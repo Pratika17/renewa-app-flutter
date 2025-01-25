@@ -115,7 +115,7 @@ class PlantCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green,
+                          color: Color.fromARGB(255, 51, 99, 53),
                         ),
                       ),
                       if (plant["originalPrice"] != null) ...[
