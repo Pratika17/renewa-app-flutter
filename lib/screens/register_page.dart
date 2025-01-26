@@ -4,8 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:renewa/screens/about_us.dart';
 
-
-final _firebase = FirebaseAuth.instance;
+final _firebaseAuth = FirebaseAuth.instance;
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -15,55 +14,56 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-  final _form = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   var _isLogin = true;
-  var _enteredEmail = '';
-  var _enteredName = '';
-  var _enteredPassword = '';
+  var _email = '';
+  var _password = '';
+  var _name = '';
   bool _isLoading = false;
 
   void _submit() async {
-    final isValid = _form.currentState!.validate();
-
-    if (!isValid) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
+    _formKey.currentState!.save();
 
-    _form.currentState!.save();
+    setState(() {
+      _isLoading = true;
+    });
 
-  try {
-      setState(() {
-        _isLoading=true;
-      });
+    try {
       if (_isLogin) {
-        await _firebase.signInWithEmailAndPassword(
-            email: _enteredEmail, password: _enteredPassword);
+        // Login logic
+        await _firebaseAuth.signInWithEmailAndPassword(
+          email: _email,
+          password: _password,
+        );
       } else {
-        final userCredentials = await _firebase.createUserWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
+        // Sign-up logic
+        final userCredentials = await _firebaseAuth.createUserWithEmailAndPassword(
+          email: _email,
+          password: _password,
         );
 
-
-        
-        
-        await FirebaseFirestore.instance.collection('users').doc(userCredentials.user!.uid).set({
-          'username': _enteredName,
-          'email': _enteredEmail,
-        
+        // Add user to Firestore
+        await FirebaseFirestore.instance.collection('Users').doc(userCredentials.user!.uid).set({
+          'user_name': _name,
+          'user_email': _email,
+          'subscription_type': 'free',
+          'created_at': FieldValue.serverTimestamp(),
         });
       }
     } on FirebaseAuthException catch (error) {
-      if (error.code == 'email-already-in-use') {}
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.message ?? 'Authentication failed.'),
         ),
       );
+    } finally {
       setState(() {
-        _isLoading=false;
+        _isLoading = false;
       });
     }
   }
@@ -74,28 +74,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // Background Image
           Image.asset(
             'assets/images/Renewa-bg.png',
             fit: BoxFit.cover,
           ),
+          // About Us Button
           Positioned(
             top: 30,
             right: 30,
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AboutUsScreen()),
-                    );
-                  },
-                  child: const Text('About Us',style: TextStyle(fontWeight: FontWeight.bold),),
-                ),
-              ],
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutUsScreen()),
+                );
+              },
+              child: const Text(
+                'About Us',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
             ),
           ),
+          // Form Container
           Center(
             child: SingleChildScrollView(
               child: Container(
@@ -114,12 +115,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                       ),
                       child: Form(
-                        key: _form,
+                        key: _formKey,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // Title
                             Text(
-                              _isLogin ? 'Login' : 'Registration',
+                              _isLogin ? 'Login' : 'Sign Up',
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -127,66 +129,64 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             const SizedBox(height: 30),
+                            // Name Field (Only for Registration)
                             if (!_isLogin)
                               TextFormField(
+                                key: const ValueKey('name'),
                                 decoration: const InputDecoration(
                                   suffixIcon: Icon(Icons.person),
                                   labelText: 'Name',
                                   labelStyle: TextStyle(
                                     color: Color.fromRGBO(26, 86, 76, 1),
                                   ),
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Color.fromARGB(255, 15, 45, 14)),
-                                  ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: Color.fromARGB(255, 21, 45, 27)),
-                                  ),
                                 ),
-                                style: const TextStyle(color: Color.fromARGB(255, 18, 44, 26)),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Please enter your name.';
+                                  }
+                                  return null;
+                                },
                                 onSaved: (value) {
-                                  _enteredName = value!;
+                                  _name = value!;
                                 },
                               ),
+                            const SizedBox(height: 10),
+                            // Email Field
                             TextFormField(
+                              key: const ValueKey('email'),
                               decoration: const InputDecoration(
                                 suffixIcon: Icon(Icons.mail),
                                 labelText: 'Email',
-                                labelStyle: TextStyle(color: Color.fromARGB(255, 19, 43, 30)),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color.fromARGB(255, 15, 45, 14)),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color.fromARGB(255, 21, 45, 27)),
+                                labelStyle: TextStyle(
+                                  color: Color.fromARGB(255, 19, 43, 30),
                                 ),
                               ),
                               keyboardType: TextInputType.emailAddress,
-                              autocorrect: false,
-                              textCapitalization: TextCapitalization.none,
-                              style: const TextStyle(color: Color.fromARGB(255, 18, 44, 26)),
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty || !value.contains('@') || !value.contains('.com')) {
+                                if (value == null ||
+                                    value.trim().isEmpty ||
+                                    !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$')
+                                        .hasMatch(value)) {
                                   return 'Please enter a valid email address.';
                                 }
                                 return null;
                               },
                               onSaved: (value) {
-                                _enteredEmail = value!;
+                                _email = value!;
                               },
                             ),
+                            const SizedBox(height: 10),
+                            // Password Field
                             TextFormField(
+                              key: const ValueKey('password'),
                               decoration: const InputDecoration(
                                 suffixIcon: Icon(Icons.lock),
                                 labelText: 'Password',
-                                labelStyle: TextStyle(color: Color.fromARGB(255, 18, 42, 27)),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color.fromARGB(255, 20, 47, 26)),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color.fromARGB(255, 20, 42, 22)),
+                                labelStyle: TextStyle(
+                                  color: Color.fromARGB(255, 18, 42, 27),
                                 ),
                               ),
                               obscureText: true,
-                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Theme.of(context).colorScheme.onSurface),
                               validator: (value) {
                                 if (value == null || value.trim().length < 6) {
                                   return 'Password must be at least 6 characters long.';
@@ -194,10 +194,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 return null;
                               },
                               onSaved: (value) {
-                                _enteredPassword = value!;
+                                _password = value!;
                               },
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
+                            // Loading Indicator or Submit Button
                             if (_isLoading)
                               const CircularProgressIndicator(),
                             if (!_isLoading)
@@ -209,6 +210,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 ),
                                 child: Text(_isLogin ? 'Login' : 'Sign Up'),
                               ),
+                            const SizedBox(height: 10),
+                            // Switch Between Login/Sign Up
                             TextButton(
                               onPressed: () {
                                 setState(() {
@@ -217,10 +220,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Text(
                                 _isLogin ? 'Create an account' : 'I already have an account',
-                                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ),
                           ],

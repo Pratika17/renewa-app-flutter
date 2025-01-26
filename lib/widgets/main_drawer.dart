@@ -12,10 +12,10 @@ class MainDrawer extends StatelessWidget {
 
   Future<String> _getUserName() async {
     final userDoc = await FirebaseFirestore.instance
-        .collection('users')
+        .collection('Users')
         .doc(authenticatedUser.uid)
         .get();
-    return userDoc.data()?['username'] ?? 'Profile';
+    return userDoc.data()?['user_name'] ?? 'Profile';
   }
 
   Future<void> _handleCouponsNavigation(BuildContext context) async {

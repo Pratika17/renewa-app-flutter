@@ -3,15 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:renewa/widgets/image_input.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() {
-    return _EditProfileScreenState();
-  }
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
@@ -35,19 +34,73 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser!;
-      final userData = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('user_email', isEqualTo: user.email)
+          .get();
 
-      if (userData.exists) {
+      if (userDoc.docs.isNotEmpty) {
+        final userData = userDoc.docs.first.data();
         setState(() {
-          _nameController.text = userData['name'];
-          _phoneController.text = userData['phone'];
-          _dobController.text = userData['dob'];
+          _nameController.text = userData['user_name'] ?? '';
+          _phoneController.text = userData['phone'] ?? '';
+          _dobController.text = userData['dob'] ?? '';
           _imageUrl = userData['imageUrl'];
         });
       }
     } catch (e) {
-      // Handle errors appropriately in your application
       print('Error fetching user details: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _pickDateOfBirth() async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        _dobController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
+      });
+    }
+  }
+
+  Future<void> _removePicture() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final user = FirebaseAuth.instance.currentUser!;
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('user_images')
+          .child('${user.uid}.jpg');
+
+      await ref.delete();
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .update({'imageUrl': null});
+
+      setState(() {
+        _imageUrl = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture removed')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to remove profile picture')),
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -65,29 +118,69 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       String? imageUrl = _imageUrl;
 
       if (_selectedImage != null) {
-        final ref = FirebaseStorage.instance.ref().child('user_images').child('${user.uid}.jpg');
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('user_images')
+            .child('${user.uid}.jpg');
         await ref.putFile(_selectedImage!);
         imageUrl = await ref.getDownloadURL();
       }
 
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'name': _nameController.text,
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .set({
+        'user_name': _nameController.text,
         'phone': _phoneController.text,
         'dob': _dobController.text,
         'imageUrl': imageUrl,
+        'user_email': user.email,
+        'updated_at': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
-      setState(() {
-        _imageUrl = imageUrl;
-      });
+      await _fetchUserDetails();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully')),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update profile. Please try again.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update profile. Please try again.')),
+      );
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+  }
+
+  void _showEditPictureOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.delete),
+            title: const Text('Remove Picture'),
+            onTap: () {
+              Navigator.of(ctx).pop();
+              _removePicture();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Re-take and Upload'),
+            onTap: () {
+              Navigator.of(ctx).pop();
+              setState(() {
+                _selectedImage = null;
+              });
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -106,7 +199,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: const EdgeInsets.only(left: 40, right: 40.0, top: 16.0, bottom: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -121,8 +214,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      filled: false,
-                      hintStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       hintText: "Name",
                     ),
                   ),
@@ -133,50 +224,58 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      filled: false,
-                      hintStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       hintText: "Phone Number",
                     ),
                   ),
                   const SizedBox(height: 30),
                   TextField(
                     controller: _dobController,
+                    readOnly: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      filled: false,
-                      hintStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                       hintText: "Date of Birth",
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: _pickDateOfBirth,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),
-                  ImageInput(
-                    onPickImage: (value) {
-                      _selectedImage = value;
-                    },
-                  ),
+                  if (_imageUrl == null)
+                    ImageInput(
+                      onPickImage: (value) {
+                        setState(() {
+                          _selectedImage = value;
+                        });
+                      },
+                    ),
                   const SizedBox(height: 8),
                   if (_imageUrl != null)
                     Center(
-                      child: Container(
-                        height: 200,
-                        width: 200,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Image.network(
-                          _imageUrl!,
-                          fit: BoxFit.cover,
-                        ),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 200,
+                            width: 200,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Image.network(
+                              _imageUrl!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: _showEditPictureOptions,
+                            child: const Text('Edit Picture'),
+                          ),
+                        ],
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Take a picture e.g., aadhar, income tax etc',
-                    style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                  ),
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -184,12 +283,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ElevatedButton(
                         onPressed: _submitDetails,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.only(top: 16, bottom: 16, right: 24, left: 24),
-                          maximumSize: const Size(200, 50),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 24),
                           backgroundColor: const Color.fromRGBO(27, 142, 123, 1),
-                          foregroundColor: Colors.white,
                         ),
-                        child:const Text('Submit'),
+                        child: const Text('Submit'),
                       ),
                     ],
                   ),
