@@ -78,7 +78,6 @@ class FeedScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('Submissions')
-            .where('campaign_id', isEqualTo: 'GreenSnap')
             .orderBy('created_at', descending: true)
             .snapshots(),
         builder: (context, snapshot) {

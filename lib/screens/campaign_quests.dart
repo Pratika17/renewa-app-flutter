@@ -1,148 +1,112 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:intl/intl.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_upload.dart';
 
 class CampaignQuestScreen extends StatefulWidget {
-  const CampaignQuestScreen({super.key, required this.campaign, required this.collectionName});
-  
-  final Campaign campaign;
-  final String collectionName; // Pass the collection name as a parameter
+  const CampaignQuestScreen(
+      {super.key, required this.campaign, required this.collectionName});
 
+  final Campaign campaign;
+  final String collectionName;
 
   @override
-  State<CampaignQuestScreen> createState() {
-    return _CampaignQuestScreenState();
-  }
+  State<CampaignQuestScreen> createState() => _CampaignQuestScreenState();
 }
 
 class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
-  late bool isJoined;
   late bool isJoining;
   User? currentUser;
-  int participantsCount = 0; // Variable to store participant count
+
+  // Variables to store fetched campaign details
+  DateTime? campaignStartDate;
+  DateTime? campaignEndDate;
+  int campaignCredits = 0;
 
   @override
   void initState() {
     super.initState();
-    isJoined = false; // Initially not joined
-    isJoining = false; // Initially not joining
-    fetchCurrentUser(); // Fetch the current user
-    fetchParticipantsCount(); // Fetch the participant count
+    isJoining = false;
+    fetchCurrentUser();
+    fetchCampaignDetails(); // Fetch campaign details
   }
 
   Future<void> fetchCurrentUser() async {
     currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      await checkIfJoined();
-    }
   }
 
-  Future<void> checkIfJoined() async {
-    // Check Firestore to see if the user has already joined
-    final userDocRef = FirebaseFirestore.instance
-        .collection(widget.collectionName)
-        .doc('Participants')
-        .collection('Users')
-        .doc(currentUser!.uid);
-
-    DocumentSnapshot userSnapshot = await userDocRef.get();
-    if (userSnapshot.exists) {
-      setState(() {
-        isJoined = true;
-      });
-    }
+  Future<int> fetchParticipantsCount() async {
+    final participantsQuery = await FirebaseFirestore.instance
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: widget.campaign.title)
+        .where('status', isEqualTo: 'pending')
+        .get();
+    return participantsQuery.docs.length;
   }
 
-  Future<void> fetchParticipantsCount() async {
-    final participantsDocRef = FirebaseFirestore.instance
-        .collection(widget.collectionName)
-        .doc('Participants');
+  Future<void> fetchCampaignDetails() async {
+      final campaignQuery = await FirebaseFirestore.instance
+          .collection('Campaigns')
+          .where('name', isEqualTo: widget.campaign.title)
+          .get();
 
-    DocumentSnapshot snapshot = await participantsDocRef.get();
-    if (snapshot.exists) {
-      setState(() {
-        participantsCount = snapshot['number'];
-      });
-    }
+      if(campaignQuery.docs.isNotEmpty){
+        final doc = campaignQuery.docs.first;
+         setState(() {
+            campaignStartDate = (doc['start_date'] as Timestamp).toDate();
+            campaignEndDate = (doc['end_date'] as Timestamp).toDate();
+            campaignCredits = doc['reward_value'];
+         });
+      }
   }
 
   String getCampaignStatus() {
-    DateTime now = DateTime.now();
-    if (now.isBefore(widget.campaign.startDate)) {
-      Duration timeUntilStart = widget.campaign.startDate.difference(now);
-      int days = timeUntilStart.inDays;
-      int hours = timeUntilStart.inHours.remainder(24);
-      int minutes = timeUntilStart.inMinutes.remainder(60);
-      return 'Upcoming - Starts in ${days}d ${hours}h ${minutes}m';
-    } else if (now.isAfter(widget.campaign.specificEndDate)) {
-      return 'Past';
-    } else {
-      Duration remainingTime = widget.campaign.specificEndDate.difference(now);
-      int days = remainingTime.inDays;
-      int hours = remainingTime.inHours.remainder(24);
-      int minutes = remainingTime.inMinutes.remainder(60);
-      return 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
-    }
+        DateTime now = DateTime.now();
+        if (campaignStartDate == null || campaignEndDate == null) {
+          return 'Loading...'; // Or some default status
+        }
+        if (now.isBefore(campaignStartDate!)) {
+           Duration timeUntilStart = campaignStartDate!.difference(now);
+            int days = timeUntilStart.inDays;
+            int hours = timeUntilStart.inHours.remainder(24);
+            int minutes = timeUntilStart.inMinutes.remainder(60);
+            return 'Upcoming - Starts in ${days}d ${hours}h ${minutes}m';
+
+        } else if (now.isAfter(campaignEndDate!)) {
+          return 'Past';
+        } else {
+            Duration remainingTime = campaignEndDate!.difference(now);
+            int days = remainingTime.inDays;
+            int hours = remainingTime.inHours.remainder(24);
+            int minutes = remainingTime.inMinutes.remainder(60);
+            return 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
+        }
+
   }
 
   Future<void> joinQuest() async {
     if (currentUser == null || isJoining) return;
 
     setState(() {
-      isJoining = true; // Disable the button and show loading spinner
+      isJoining = true;
     });
 
     try {
-      // Get the Firestore document reference
-      final participantsDocRef = FirebaseFirestore.instance
-          .collection(widget.collectionName)
-          .doc('Participants');
+      // No need for participants document reference. User will have a submission document
+        // Navigate to the next screen
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => CampaignUploadScreen(campaign: widget.campaign),
+        ));
 
-      final userDocRef = participantsDocRef
-          .collection('Users')
-          .doc(currentUser!.uid);
 
-      // Check if the user has already joined
-      DocumentSnapshot userSnapshot = await userDocRef.get();
-
-      if (!userSnapshot.exists) {
-        // Update the participants count in Firestore
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          DocumentSnapshot snapshot = await transaction.get(participantsDocRef);
-
-          if (!snapshot.exists) {
-            throw Exception("Campaign does not exist!");
-          }
-
-          int currentParticipants = snapshot['number'];
-          transaction.update(participantsDocRef, {'number': currentParticipants + 1});
-          transaction.set(userDocRef, {'joined': true});
-
-          // Update the participants count in the state
-          setState(() {
-            participantsCount = currentParticipants + 1;
-          });
-        });
-
-        // Update the state to reflect the joined status
-        setState(() {
-          isJoined = true;
-        });
-      }
     } catch (e) {
       // Handle errors if needed
     } finally {
       setState(() {
-        isJoining = false; // Re-enable the button and hide loading spinner
+        isJoining = false;
       });
-
-      // Navigate to the next screen
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => CampaignUploadScreen(campaign: widget.campaign),
-      ));
     }
   }
 
@@ -159,7 +123,8 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text('Quest', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        title: const Text('Quest',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -170,7 +135,9 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Quest - ${widget.campaign.quest[0]}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Quest - ${widget.campaign.quest[0]}',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
@@ -182,11 +149,14 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
                             ? joinQuest
                             : () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => CampaignUploadScreen(campaign: widget.campaign),
+                                  builder: (context) =>
+                                      CampaignUploadScreen(campaign: widget.campaign),
                                 ));
                               },
-                    icon: isJoining ? const CircularProgressIndicator(color: Colors.white) : const Icon(Icons.arrow_forward),
-                    label: Text(isCampaignOngoing ? (isJoined ? 'Joined' : 'Join Quest') : (campaignStatus.startsWith('Upcoming') ? 'Upcoming' : 'Past')),
+                    icon: isJoining
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Icon(Icons.arrow_forward),
+                    label: Text(isCampaignOngoing ? 'Join Quest' : (campaignStatus.startsWith('Upcoming') ? 'Upcoming' : 'Past')),
                   ),
                 ],
               ),
@@ -211,44 +181,93 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                           Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('STARTS',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                               Text(
+                                      campaignStartDate != null
+                                          ? DateFormat('MMM dd, yyyy')
+                                              .format(campaignStartDate!)
+                                          : 'Loading...',
+                                      style: const TextStyle(fontSize: 12)),
+
+                            ],
+                          ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('STARTS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(DateFormat('MMM dd, yyyy').format(widget.campaign.startDate), style: const TextStyle(fontSize: 12)),
+                             const Text('ENDS',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                             Text(
+                                  campaignEndDate != null
+                                      ? DateFormat('MMM dd, yyyy')
+                                          .format(campaignEndDate!)
+                                      : 'Loading...',
+                                  style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('ENDS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(DateFormat('MMM dd, yyyy').format(widget.campaign.specificEndDate), style: const TextStyle(fontSize: 12)),
+                            const Text('CREDIT',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold)),
+                                    Text('$campaignCredits',
+                                        style: const TextStyle(fontSize: 12)),
                           ],
                         ),
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('CREDITS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('1500', style: TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('CREDIT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('${widget.campaign.credits}', style: const TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('PLAYERS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('$participantsCount', style: const TextStyle(fontSize: 12)), // the number of participants should be loaded from firestore
-                          ],
+                        FutureBuilder<int>(
+                          future: fetchParticipantsCount(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('PLAYERS',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Loading...',
+                                      style: TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            } else if (snapshot.hasError) {
+                              return const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('PLAYERS',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Error',
+                                      style: TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            } else {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('PLAYERS',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${snapshot.data}',
+                                      style: const TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8), // Adjust height as needed
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -273,7 +292,8 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(widget.campaign.introduction, style: const TextStyle(fontSize: 16)),
+              Text(widget.campaign.introduction,
+                  style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 16),
               const Divider(color: Colors.black),
               const Text(
@@ -284,7 +304,8 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(widget.campaign.deliverables, style: const TextStyle(fontSize: 16)),
+              Text(widget.campaign.deliverables,
+                  style: const TextStyle(fontSize: 16)),
             ],
           ),
         ),

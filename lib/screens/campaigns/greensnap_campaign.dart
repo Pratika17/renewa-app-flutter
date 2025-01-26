@@ -261,16 +261,19 @@ class GreenSnapCampaignScreen extends StatelessWidget {
 
     // Fetch the number of participants (submissions count)
     final participantsQuery = await FirebaseFirestore.instance
-        .collection('submissions')
-        .where('campaign_id', isEqualTo: campaign.id)
-        .where('created_at', isGreaterThanOrEqualTo: campaign.startDate)
-        .where('created_at', isLessThanOrEqualTo: campaign.specificEndDate)
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: "GreenSnap")
+        .where('status', isEqualTo: 'pending')
         .get();
+    final creditQuery = await FirebaseFirestore.instance
+    .collection('Campaigns')
+    .where('name', isEqualTo: "GreenSnap")
+    .get();
 
     int participants = participantsQuery.docs.length;
 
     // Credits (can be static or dynamic)
-    int credits = campaign.credits;
+    int credits = creditQuery.docs.first['reward_value'];
 
     return {
       'status': status,

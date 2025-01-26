@@ -18,11 +18,19 @@ class MainDrawer extends StatelessWidget {
     return userDoc.data()?['user_name'] ?? 'Profile';
   }
 
+  Future<String?> _getUserImageUrl() async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(authenticatedUser.uid)
+        .get();
+    return userDoc.data()?['imageUrl'];
+  }
+
   Future<void> _handleCouponsNavigation(BuildContext context) async {
     print("Coupons navigation started");
     try {
       final userDoc = await FirebaseFirestore.instance
-          .collection('users')
+          .collection('Users')
           .doc(authenticatedUser.uid)
           .get();
 
@@ -33,7 +41,8 @@ class MainDrawer extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Error'),
-            content:const Text('Please verify your age to get coupons'),
+            content:
+                const Text('Please verify your age to get coupons'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
@@ -48,18 +57,21 @@ class MainDrawer extends StatelessWidget {
       }
 
       String dobStr = userDoc.data()!['dob'];
-      // Parse date from "YYYY/MM/DD" format
-      List<String> dateParts = dobStr.split('/');
+
+        // Parse date from "YYYY-MM-DD" format
+      List<String> dateParts = dobStr.split('-');
       DateTime dob = DateTime(
         int.parse(dateParts[0]),
         int.parse(dateParts[1]),
         int.parse(dateParts[2]),
       );
 
+
       DateTime today = DateTime.now();
 
       int age = today.year - dob.year;
-      if (today.month < dob.month || (today.month == dob.month && today.day < dob.day)) {
+      if (today.month < dob.month ||
+          (today.month == dob.month && today.day < dob.day)) {
         age--;
       }
 
@@ -103,14 +115,37 @@ class MainDrawer extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 0, 0, 0),
-                  radius: 27,
-                  child: Icon(
-                    Icons.person,
-                    size: 48,
-                    color: Colors.white,
-                  ),
+                FutureBuilder<String?>(
+                  future: _getUserImageUrl(),
+                  builder: (ctx, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircleAvatar(
+                          backgroundColor: Color.fromARGB(255, 0, 0, 0),
+                        radius: 27,
+                        child: Icon(
+                          Icons.person,
+                           size: 48,
+                            color: Colors.white,
+                      ),
+                      );
+                    } else if (snapshot.hasError || !snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+                      return const CircleAvatar(
+                         backgroundColor: Color.fromARGB(255, 0, 0, 0),
+                        radius: 27,
+                        child: Icon(
+                           Icons.person,
+                            size: 48,
+                            color: Colors.white,
+                        ),
+                      );
+                    } else {
+                      return CircleAvatar(
+                         backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+                        radius: 27,
+                        backgroundImage: NetworkImage(snapshot.data!),
+                      );
+                    }
+                  },
                 ),
                 const SizedBox(width: 18),
                 FutureBuilder<String>(
