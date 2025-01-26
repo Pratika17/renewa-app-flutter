@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:renewa/data/campaigns_data.dart';
-import 'package:renewa/screens/campaigns/ewaste.dart';
+
 import 'package:renewa/screens/campaigns/recycling.dart';
 
 class EnviroshotsScreen extends StatelessWidget {
@@ -44,7 +44,7 @@ class EnviroshotsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   GridView.count(
-                    crossAxisCount: 2,
+                    crossAxisCount: 1,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
@@ -57,13 +57,7 @@ class EnviroshotsScreen extends StatelessWidget {
                         
                         ),
                       ),
-                      GestureDetector(
-                        onTap:(){ Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => EWasteScreen(campaign: campaigns[14],)));},
-                        child: const PathwayCard(
-                          image: 'assets/images/ewaste.png',
-                          title: 'E-Waste',
-                        ),
-                      ),
+                      
               
                     ],
                   ),
