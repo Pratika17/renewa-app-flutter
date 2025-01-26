@@ -46,19 +46,19 @@ Future<void> _checkIfAlreadySubmitted() async {
 
   final userEmail = user.email;
   final userSnapshot = await FirebaseFirestore.instance
-      .collection('users')
-      .where('email', isEqualTo: userEmail)
+      .collection('Users')
+      .where('user_email', isEqualTo: userEmail)
       .limit(1)
       .get();
 
   if (userSnapshot.docs.isNotEmpty) {
-    final username = userSnapshot.docs.first['username'];
+    final username = userSnapshot.docs.first['user_name'];
 
     // Fetch all submissions for the campaign
     final campaignSubmissions = await FirebaseFirestore.instance
         .collection('Submissions')
         .where('campaign_id', isEqualTo: widget.campaign.title)
-        .where('user_id', isEqualTo: username)
+        .where('user_name', isEqualTo: username)
         .get();
 
     if (campaignSubmissions.docs.isNotEmpty) {
@@ -99,11 +99,11 @@ Future<void> _checkIfAlreadySubmitted() async {
       // Fetch the username of the current user
       final userEmail = user.email;
       final userSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: userEmail)
+          .collection('Users')
+          .where('user_email', isEqualTo: userEmail)
           .limit(1)
           .get();
-      final username = userSnapshot.docs.first['username'];
+      final username = userSnapshot.docs.first['user_name'];
 
       final fileName = path.basename(_selectedImage!.path);
       final storageRef = FirebaseStorage.instance
@@ -126,7 +126,8 @@ Future<void> _checkIfAlreadySubmitted() async {
         'status':"pending",
         'location': _pickedLocation!.address,
         'description': _descriptionController.text,
-        'user_id': username, // Use the fetched username
+        'user_name': username,
+        'user_email':userEmail // Use the fetched username
       });
 
       Navigator.of(context)

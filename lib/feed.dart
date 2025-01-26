@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
 import 'package:flutter/material.dart';
+import 'package:renewa/screens/newFeatures/leaderboard.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -58,7 +59,7 @@ class FeedScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const FeedScreen(),
+                  builder: (context) => const LeaderboardScreen(),
                 ),
               );
             },
@@ -98,9 +99,9 @@ class FeedScreen extends StatelessWidget {
               final submissionId = submission.id;
               final imageUrl = submission['photo_url'];
               final location = submission['location'];
-              final submissionUserId = submission['user_id'];
               final submissionUserName = submission['user_name']; // "Posted by"
               final campaignId = submission['campaign_id'];
+
 
               return FutureBuilder<String>(
                 future: _getLoggedInUserName(userId), // Fetch logged-in user name
@@ -112,6 +113,7 @@ class FeedScreen extends StatelessWidget {
                     return const Center(child: Text('Error fetching user info.'));
                   }
                   final loggedInUserName = userSnapshot.data!;
+
 
                   return Card(
                     margin: const EdgeInsets.all(10),
@@ -204,6 +206,7 @@ class FeedScreen extends StatelessWidget {
                                               .add({
                                             'comment': value,
                                             'user_id': userId,
+                                            
                                             'user_name': loggedInUserName,
                                             'timestamp': FieldValue.serverTimestamp(),
                                           });
