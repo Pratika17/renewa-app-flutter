@@ -3,6 +3,7 @@ import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/newFeatures/citizen_credit.dart';
 import 'package:renewa/screens/newFeatures/citizen_reports.dart';
 import 'package:renewa/screens/newFeatures/citizen_upload.dart';
+import 'package:renewa/screens/newFeatures/collection_request.dart';
 
 class CollectionWorkersScreen extends StatelessWidget {
   const CollectionWorkersScreen(
@@ -50,9 +51,7 @@ class CollectionWorkersScreen extends StatelessWidget {
         ElevatedButton(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => CitizenUploadScreen(
-                  campaign: campaign,
-                ),
+                builder: (context) => RequestsScreen()
               ));
             },
             style: ElevatedButton.styleFrom(
