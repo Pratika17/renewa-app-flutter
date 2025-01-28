@@ -1,14 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class BankAccDetailsScreen extends StatefulWidget {
   const BankAccDetailsScreen({super.key});
 
   @override
-  State<BankAccDetailsScreen> createState() {
-    return _BankAccDetailsScreenState();
-  }
+  State<BankAccDetailsScreen> createState() => _BankAccDetailsScreenState();
 }
 
 class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
@@ -21,6 +19,8 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
   final _emailController = TextEditingController();
   final _dobController = TextEditingController();
   bool _isLoading = false;
+  bool _isAlreadySet = false;
+  String? _existingDocId;
 
   @override
   void initState() {
@@ -35,22 +35,35 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser!;
-      final userData = await FirebaseFirestore.instance
-          .collection('bankDetails')
-          .doc(user.uid)
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('user_email', isEqualTo: user.email)
           .get();
 
-      if (userData.exists) {
-        setState(() {
-          _fullNameController.text = userData['fullName'];
-          _accountNumberController.text = userData['accountNumber'];
-          _bankNameController.text = userData['bankName'];
-          _branchCodeController.text = userData['branchCode'];
-          _branchNameController.text = userData['branchName'];
-          _addressController.text = userData['address'];
-          _emailController.text = userData['email'];
-          _dobController.text = userData['dob'];
-        });
+      if (userSnapshot.docs.isNotEmpty) {
+        final userDocId = userSnapshot.docs.first.id;
+        final userData = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userDocId)
+            .collection('BankDetails')
+            .limit(1)
+            .get();
+
+        if (userData.docs.isNotEmpty) {
+          setState(() {
+            _isAlreadySet = true;
+            _existingDocId = userData.docs.first.id;
+            final data = userData.docs.first.data();
+            _fullNameController.text = data['fullName'];
+            _accountNumberController.text = data['accountNumber'];
+            _bankNameController.text = data['bankName'];
+            _branchCodeController.text = data['branchCode'];
+            _branchNameController.text = data['branchName'];
+            _addressController.text = data['address'];
+            _emailController.text = data['email'];
+            _dobController.text = data['dob'];
+          });
+        }
       }
     } catch (e) {
       print('Error fetching user details: $e');
@@ -68,23 +81,50 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser!;
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('user_email', isEqualTo: user.email)
+          .get();
 
-      await FirebaseFirestore.instance
-          .collection('bankDetails')
-          .doc(user.uid)
-          .set({
-        'fullName': _fullNameController.text,
-        'accountNumber': _accountNumberController.text,
-        'bankName': _bankNameController.text,
-        'branchCode': _branchCodeController.text,
-        'branchName': _branchNameController.text,
-        'address': _addressController.text,
-        'email': _emailController.text,
-        'dob': _dobController.text,
-      }, SetOptions(merge: true));
+      if (userSnapshot.docs.isNotEmpty) {
+        final userDocId = userSnapshot.docs.first.id;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Details updated successfully')));
+        if (_isAlreadySet && _existingDocId != null) {
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(userDocId)
+              .collection('BankDetails')
+              .doc(_existingDocId)
+              .set({
+            'fullName': _fullNameController.text,
+            'accountNumber': _accountNumberController.text,
+            'bankName': _bankNameController.text,
+            'branchCode': _branchCodeController.text,
+            'branchName': _branchNameController.text,
+            'address': _addressController.text,
+            'email': _emailController.text,
+            'dob': _dobController.text,
+          });
+        } else {
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .doc(userDocId)
+              .collection('BankDetails')
+              .add({
+            'fullName': _fullNameController.text,
+            'accountNumber': _accountNumberController.text,
+            'bankName': _bankNameController.text,
+            'branchCode': _branchCodeController.text,
+            'branchName': _branchNameController.text,
+            'address': _addressController.text,
+            'email': _emailController.text,
+            'dob': _dobController.text,
+          });
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Details updated successfully')));
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Failed to update details. Please try again.')));
@@ -133,6 +173,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Full Name",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -146,6 +187,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Bank Account Number",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -159,6 +201,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Bank Name",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -172,6 +215,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Branch Code",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -185,6 +229,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Branch Name",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -198,6 +243,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Address",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -211,6 +257,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Email",
                       ),
+                      enabled: false,
                     ),
                     const SizedBox(height: 30),
                     TextField(
@@ -224,6 +271,7 @@ class _BankAccDetailsScreenState extends State<BankAccDetailsScreen> {
                             color: Color.fromARGB(255, 0, 0, 0)),
                         hintText: "Date Of Birth",
                       ),
+                      enabled: !_isAlreadySet,
                     ),
                     const SizedBox(height: 30),
                     Row(

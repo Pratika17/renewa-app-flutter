@@ -29,7 +29,7 @@ class SubmissionDetailsScreen extends StatelessWidget {
     String locationImage;
     if (lat != null && lng != null) {
       locationImage =
-          'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng=&zoom=16&size=600x300&maptype=roadmap&markers=color:red%7Clabel:A%7C$lat,$lng&key=YOUR_API_KEY';
+          'https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng=&zoom=16&size=600x300&maptype=roadmap&markers=color:red%7Clabel:A%7C$lat,$lng&key=AIzaSyDo4_5HApr0g6HOQ8NNqJhgG67jxu-ycYE';
     } else {
       locationImage = '';
     }

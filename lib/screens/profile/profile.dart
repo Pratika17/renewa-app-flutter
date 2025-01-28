@@ -1,12 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/screens/profile/bankaccdetails.dart';
 import 'package:renewa/screens/profile/changepass.dart';
 import 'package:renewa/screens/profile/editprofile.dart';
-import 'package:renewa/screens/profile/questrecords.dart';
-import 'package:renewa/screens/profile/rewards.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String? _userImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userEmail = user.email;
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('user_email', isEqualTo: userEmail)
+          .limit(1)
+          .get();
+
+       if(userSnapshot.docs.isNotEmpty){
+         setState(() {
+          _userImageUrl = userSnapshot.docs.first['imageUrl'];
+         });
+
+       }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,23 +56,22 @@ class ProfileScreen extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             CircleAvatar(
               radius: 55,
-              backgroundColor: Colors.grey.shade300,
-              child: Icon(
+               backgroundColor: Colors.grey.shade300,
+              backgroundImage:  _userImageUrl != null && _userImageUrl!.isNotEmpty ? NetworkImage(_userImageUrl!) : null,
+              child: _userImageUrl == null || _userImageUrl!.isEmpty ? Icon(
                 Icons.person,
                 size: 50,
                 color: Colors.grey.shade600,
-              ),
+              ): null
             ),
             const SizedBox(height: 20),
-            const ProfileButton(text: 'Edit Profile', screen:EditProfileScreen()),
-            ProfileButton(text: 'Rewards Earned', screen: RewardsScreen()),
+             const ProfileButton(text: 'Edit Profile', screen:EditProfileScreen()),
             const ProfileButton(text: 'Bank Acc Details', screen: BankAccDetailsScreen()),
             const ProfileButton(text: 'Change Password', screen: ChangePasswordScreen()),
-            ProfileButton(text: 'Quest Records', screen: QuestRecordsScreen()),
           ],
         ),
       ),
