@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:renewa/data/campaigns_data.dart';
 import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
 import 'package:renewa/screens/newFeatures/citizens.dart';
 import 'package:renewa/screens/newFeatures/collection_workers.dart';
+import 'package:renewa/screens/newFeatures/dealers.dart';
 
 class RecyclingScreen extends StatelessWidget {
   final Campaign campaign;
@@ -158,7 +158,14 @@ class RecyclingScreen extends StatelessWidget {
         const SizedBox(height: 16),
         ElevatedButton(
             onPressed: () {
-              _navigateToQuestScreen(context, 'Dealer');
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => DealersScreen(
+                    campaign: campaigns[13],
+                    collectionName: campaigns[13].collectionName ?? 'Recycling',
+                  ),
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 175, 226, 130),

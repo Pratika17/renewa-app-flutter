@@ -24,7 +24,6 @@ class _CitizenUploadScreenState extends State<CitizenUploadScreen> {
   File? _selectedImage;
   PlaceLocation? _pickedLocation;
   final TextEditingController _descriptionController = TextEditingController();
-  bool _isAlreadySubmitted = false;
   bool _isCheckboxChecked = false;
   bool _isSubmitting = false; // Add this line
   String? _existingImageUrl;

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/newFeatures/citizen_credit.dart';
 import 'package:renewa/screens/newFeatures/citizen_reports.dart';
-import 'package:renewa/screens/newFeatures/citizen_upload.dart';
-import 'package:renewa/screens/newFeatures/collection_achievements.dart';
-import 'package:renewa/screens/newFeatures/collection_request.dart';
+import 'package:renewa/screens/newFeatures/dealer_award_1.dart';
+import 'package:renewa/screens/newFeatures/dealer_details.dart';
 
-class CollectionWorkersScreen extends StatelessWidget {
-  const CollectionWorkersScreen(
+class DealersScreen extends StatelessWidget {
+  const DealersScreen(
       {super.key, required this.campaign, required this.collectionName});
   final Campaign campaign;
   final String collectionName;
@@ -31,7 +30,7 @@ class CollectionWorkersScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 8),
             const Text(
-              'Collection Worker',
+              'Dealer',
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
@@ -52,7 +51,7 @@ class CollectionWorkersScreen extends StatelessWidget {
         ElevatedButton(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => RequestsScreen()
+                builder: (context) => DealerRegistrationScreen(),
               ));
             },
             style: ElevatedButton.styleFrom(
@@ -61,7 +60,7 @@ class CollectionWorkersScreen extends StatelessWidget {
                     const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30))),
-            child: const Text("Requests",
+            child: const Text("Dealer Details",
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -71,7 +70,7 @@ class CollectionWorkersScreen extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const CollectionAchievementsScreen(),
+                  builder: (context) => const RequestsScreen(),
                 ),
               );
             },
@@ -82,7 +81,7 @@ class CollectionWorkersScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30))),
             child: const Text(
-              "Achievements",
+              "Reward",
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -110,28 +109,7 @@ class CollectionWorkersScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: Colors.black),
             )),
-        const SizedBox(height: 16),
-        ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => CitizenCreditScreen(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 175, 226, 130),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30))),
-            child: const Text(
-              "Credits",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            )),
+      
       ],
     );
   }
