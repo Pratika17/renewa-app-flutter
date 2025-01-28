@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:renewa/data/campaigns_data.dart';
 import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
-import 'package:renewa/screens/campaign_quests.dart';
 import 'package:renewa/screens/newFeatures/citizens.dart';
 import 'package:renewa/screens/newFeatures/collection_workers.dart';
 import 'package:renewa/screens/newFeatures/dealers.dart';
@@ -132,76 +130,51 @@ class RecyclingScreen extends StatelessWidget {
                     color: Colors.black))),
         const SizedBox(height: 16),
         ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => CollectionWorkersScreen(
-                    campaign: campaigns[13],
-                    collectionName: campaigns[13].collectionName ?? 'Recycling',
-                  ),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => CollectionWorkersScreen(
+                  campaign: campaigns[13],
+                  collectionName: campaigns[13].collectionName ?? 'Recycling',
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 175, 226, 130),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30))),
-            child: const Text(
-              "Collection Worker",
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            )),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 175, 226, 130),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30))),
+          child: const Text(
+            "Collection Worker",
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+        ),
         const SizedBox(height: 16),
         ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => DealersScreen(
-                    campaign: campaigns[13],
-                    collectionName: campaigns[13].collectionName ?? 'Recycling',
-                  ),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DealersScreen(
+                  campaign: campaigns[13],
+                  collectionName: campaigns[13].collectionName ?? 'Recycling',
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 175, 226, 130),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30))),
-            child: const Text(
-              "Dealer",
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            )),
-      ],
-    );
-  }
-
-  Future<void> _navigateToQuestScreen(BuildContext context, String role) async {
-    // Check if the user is logged in
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      // User is not logged in, show a message and return
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Please log in to view quests.'),
-          duration: Duration(seconds: 3)));
-      return;
-    }
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CampaignQuestScreen(
-          campaign: campaign,
-          collectionName: campaign.collectionName!,
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 175, 226, 130),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30))),
+          child: const Text(
+            "Dealer",
+            style: TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
