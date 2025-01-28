@@ -6,7 +6,6 @@ import 'package:renewa/screens/splash.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 
 final theme = ThemeData(
   colorScheme: ColorScheme.fromSeed(

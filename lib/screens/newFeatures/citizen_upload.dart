@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -81,6 +80,7 @@ class _CitizenUploadScreenState extends State<CitizenUploadScreen> {
         'photo_url': imageUrl,
         'status':"pending",
         'location': _pickedLocation!.address,
+        'locations': {'latitude': _pickedLocation!.latitude, 'longitude': _pickedLocation!.longitude},
         'description': _descriptionController.text,
         'user_name': username,
         'user_email':userEmail // Use the fetched username

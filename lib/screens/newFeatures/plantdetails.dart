@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 
 class PlantDetailScreen extends StatefulWidget {
   final Map<String, dynamic> plant;
-  const PlantDetailScreen({Key? key, required this.plant}) : super(key: key);
+  const PlantDetailScreen({super.key, required this.plant});
 
   @override
   State<PlantDetailScreen> createState() => _PlantDetailScreenState();
@@ -139,9 +139,9 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  const Text(
                     "Inclusive of all taxes",
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
 
@@ -215,14 +215,14 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
       // Bottom Buy Now Button
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 5,
               spreadRadius: 2,
-              offset: const Offset(0, -3),
+              offset: Offset(0, -3),
             ),
           ],
         ),
