@@ -51,6 +51,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'user_name': _name,
           'user_email': _email,
           'subscription_type': 'free',
+          'credits':0,
+          'recycle_award':0,
           'created_at': FieldValue.serverTimestamp(),
         });
       }

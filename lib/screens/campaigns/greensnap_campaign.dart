@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Ensure you have this imported
 import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
@@ -78,7 +77,7 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => PlantPurchaseScreen(),
+                          builder: (context) => const PlantPurchaseScreen(),
                         ),
                       );
                     },

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Ensure you have this imported
 import 'package:renewa/feed.dart';
-// For date formatting
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
 
