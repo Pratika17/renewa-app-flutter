@@ -1,11 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:location/location.dart';
-import 'package:http/http.dart' as http;
-import 'package:renewa/models/place.dart';
 import 'package:renewa/widgets/location_input.dart';
 
 class DealerRegistrationScreen extends StatefulWidget {

@@ -10,158 +10,150 @@ class CreditPointsScreen extends StatefulWidget {
 }
 
 class _CreditPointsScreenState extends State<CreditPointsScreen> {
-    int _totalCredits = 0;
-    int _totalWithdrawn = 0;
-     bool _isLoading = true;
+  int _totalCredits = 0;
+  int _totalWithdrawn = 0;
+  bool _isLoading = true;
 
-
-   @override
+  @override
   void initState() {
     super.initState();
     _fetchCreditData();
   }
 
-
   Future<void> _fetchCreditData() async {
-       setState(() {
+    setState(() {
       _isLoading = true;
     });
-    try{
-     final user = FirebaseAuth.instance.currentUser;
-      if(user == null){
-         return;
-        }
+    int totalCredits = 0;
+    int totalWithdrawn = 0;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return;
+      }
       final userEmail = user.email;
 
-      final userSnapshot = await FirebaseFirestore.instance
-        .collection('Users')
-         .where('user_email', isEqualTo: userEmail)
-        .get();
+      final submissionsQuery = await FirebaseFirestore.instance
+          .collection('Submissions')
+          .where('user_email', isEqualTo: userEmail)
+          .get();
 
+      for (var submissionDoc in submissionsQuery.docs) {
+        if (submissionDoc['status'] == 'awarded') {
+          final campaignId = submissionDoc['campaign_id'];
 
-       if (userSnapshot.docs.isNotEmpty) {
-          final userData = userSnapshot.docs.first;
-         setState(() {
-             _totalCredits = (userData['recycle_award'] ?? 0).toInt() ;
-          });
+          final campaignQuery = await FirebaseFirestore.instance
+              .collection('Campaigns')
+              .where('name', isEqualTo: campaignId)
+              .get();
+
+          if (campaignQuery.docs.isNotEmpty) {
+            final campaignData = campaignQuery.docs.first;
+            totalCredits += (campaignData['reward_value'] ?? 0) as int;
+
+            final docId = submissionDoc.id;
+
+            final withdrawSnapshot = await FirebaseFirestore.instance
+                .collection('Withdrawals')
+                .where('submission_id', isEqualTo: docId)
+                .get();
+
+            if (withdrawSnapshot.docs.isNotEmpty) {
+              totalWithdrawn += (campaignData['reward_value'] ?? 0) as int;
+            }
           }
+        }
+      }
 
-       final submissionsQuery = await FirebaseFirestore.instance
-       .collection('Submissions')
-       .where('user_email', isEqualTo: userEmail)
-       .where('status', whereIn:['accepted','rewarded'])
-       .get();
-
-
-       int withdrawnCredits = 0;
-    for (var doc in submissionsQuery.docs) {
-       if (doc['status'] == 'rewarded') {
-            final docId = doc.id;
-              final withdrawSnapshot = await FirebaseFirestore.instance
-                  .collection('Withdrawals')
-                .where('submission_id', isEqualTo: docId).get();
-
-              if (withdrawSnapshot.docs.isNotEmpty){
-                withdrawnCredits +=100;
-                print(withdrawnCredits);
-              }
-          }
-       }
-
-           setState(() {
-               _totalWithdrawn = withdrawnCredits;
-           });
-
-
-
-     }
-        catch (e){
-            print("Error: $e");
-         }
-         finally{
-             setState(() {
-               _isLoading=false;
-              });
-         }
+      setState(() {
+        _totalCredits = totalCredits;
+        _totalWithdrawn = totalWithdrawn;
+      });
+    } catch (e) {
+      print("Error getting data: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-           title: const Text('Credit points',
-               style: TextStyle(fontWeight: FontWeight.bold)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
-        body: _isLoading ? const Center(child: CircularProgressIndicator()) : Padding(
-          padding: const EdgeInsets.all(16.0),
-           child: Center(
-           child:  Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-             Container(
-                decoration: BoxDecoration(
-                  
-                color: const Color.fromARGB(255, 178, 176, 176),
-                     borderRadius: BorderRadius.circular(5.0),
-                  ),
-                 padding: const EdgeInsets.all(20),
-                   child: Column(
-                       mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                            const Text(
-                              'Total credits earned :',
-                             
-                                style:TextStyle(fontWeight: FontWeight.bold),
-                                
-                               textAlign: TextAlign.center,
-                              
-                               
-                             ),
-                            Text(
-                                '$_totalCredits',
-                               style: Theme.of(context).textTheme.displayMedium,
+        title: const Text('Credit points',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 178, 176, 176),
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Total credits earned :',
+                            style: TextStyle(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
-
-                           ),
-                       const SizedBox(height: 10),
-                        const Text(
+                          ),
+                          Text(
+                            '$_totalCredits',
+                            style: Theme.of(context).textTheme.displayMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
                             '1 CREDIT = Rs.1',
-                             style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 50, 123, 53),fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
-                         ),
-                         const SizedBox(height: 10),
-                            Text(
-                              'Total withdrawn : $_totalWithdrawn',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Color.fromARGB(255, 50, 123, 53),
+                                fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Total withdrawn : $_totalWithdrawn',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
-                             ),
-                     ],
-                   ),
-              ),
-            const SizedBox(height: 20),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
                       ),
-                    onPressed: () {
-                         //  Navigator.of(context).push(
+                      onPressed: () {
+                        //  Navigator.of(context).push(
                         //    MaterialPageRoute(builder: (context) => WithdrawScreen(totalCredits: totalCredits,)),
-                         //  );
-                     },
-                   child: const Text('Withdraw'),
+                        //  );
+                      },
+                      child: const Text('Withdraw'),
                     ),
-           ],
-          ),
-          ),
-        ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/newFeatures/citizen_credit.dart';
-import 'package:renewa/screens/newFeatures/citizen_reports.dart';
-import 'package:renewa/screens/newFeatures/citizen_upload.dart';
 import 'package:renewa/screens/newFeatures/collection_achievements.dart';
 import 'package:renewa/screens/newFeatures/collection_request.dart';
 
@@ -110,28 +108,7 @@ class CollectionWorkersScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: Colors.black),
             )),
-        const SizedBox(height: 16),
-        ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => CitizenCreditScreen(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 175, 226, 130),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30))),
-            child: const Text(
-              "Credits",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            )),
+        
       ],
     );
   }
