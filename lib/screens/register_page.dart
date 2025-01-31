@@ -20,6 +20,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   var _email = '';
   var _password = '';
   var _name = '';
+  String _selectedRole = 'Citizen'; // Default value
   bool _isLoading = false;
 
   void _submit() async {
@@ -41,18 +42,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
       } else {
         // Sign-up logic
-        final userCredentials = await _firebaseAuth.createUserWithEmailAndPassword(
+        final userCredentials =
+            await _firebaseAuth.createUserWithEmailAndPassword(
           email: _email,
           password: _password,
         );
 
         // Add user to Firestore
-        await FirebaseFirestore.instance.collection('Users').doc(userCredentials.user!.uid).set({
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userCredentials.user!.uid)
+            .set({
           'user_name': _name,
           'user_email': _email,
           'subscription_type': 'free',
-          'credits':0,
-          'recycle_award':0,
+          'credits': 0,
+          'recycle_award': 0,
+          'recycle_role': _selectedRole, // Save selected role
           'created_at': FieldValue.serverTimestamp(),
         });
       }
@@ -89,12 +95,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AboutUsScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const AboutUsScreen()),
                 );
               },
               child: const Text(
                 'About Us',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
           ),
@@ -153,6 +161,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 },
                               ),
                             const SizedBox(height: 10),
+                            if (!_isLogin)
+                              DropdownButtonFormField<String>(
+                                value: _selectedRole,
+                                decoration: const InputDecoration(
+                                  suffixIcon: Icon(Icons.work),
+                                  labelText: 'Recycle Role',
+                                  labelStyle: TextStyle(
+                                    color: Color.fromARGB(255, 19, 43, 30),
+                                  ),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'Citizen',
+                                    child: Text('Citizen'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Collection Worker',
+                                    child: Text('Collection Worker'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Dealer',
+                                    child: Text('Dealer'),
+                                  ),
+                                ],
+                                onChanged: (String? newValue) {
+                                  if (newValue != null) {
+                                    setState(() {
+                                      _selectedRole = newValue;
+                                    });
+                                  }
+                                },
+                              ),
+                            const SizedBox(height: 10),
                             // Email Field
                             TextFormField(
                               key: const ValueKey('email'),
@@ -201,13 +242,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                             const SizedBox(height: 20),
                             // Loading Indicator or Submit Button
-                            if (_isLoading)
-                              const CircularProgressIndicator(),
+                            if (_isLoading) const CircularProgressIndicator(),
                             if (!_isLoading)
                               ElevatedButton(
                                 onPressed: _submit,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color.fromRGBO(0, 105, 92, 1),
+                                  backgroundColor:
+                                      const Color.fromRGBO(0, 105, 92, 1),
                                   foregroundColor: Colors.white,
                                 ),
                                 child: Text(_isLogin ? 'Login' : 'Sign Up'),
@@ -221,8 +262,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 });
                               },
                               child: Text(
-                                _isLogin ? 'Create an account' : 'I already have an account',
-                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                                _isLogin
+                                    ? 'Create an account'
+                                    : 'I already have an account',
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 16),
                               ),
                             ),
                           ],

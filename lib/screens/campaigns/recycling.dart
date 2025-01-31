@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/data/campaigns_data.dart';
 import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
@@ -6,10 +8,55 @@ import 'package:renewa/screens/newFeatures/citizens.dart';
 import 'package:renewa/screens/newFeatures/collection_workers.dart';
 import 'package:renewa/screens/newFeatures/dealers.dart';
 
-class RecyclingScreen extends StatelessWidget {
+class RecyclingScreen extends StatefulWidget {
   final Campaign campaign;
 
   const RecyclingScreen({super.key, required this.campaign});
+
+  @override
+  State<RecyclingScreen> createState() => _RecyclingScreenState();
+}
+
+class _RecyclingScreenState extends State<RecyclingScreen> {
+  String? _userRole;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserRole();
+  }
+
+  Future<void> _fetchUserRole() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return;
+      }
+      final userEmail = user.email;
+
+      final userSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('user_email', isEqualTo: userEmail)
+          .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        final userData = userSnapshot.docs.first;
+        setState(() {
+          _userRole = userData['recycle_role'];
+        });
+      }
+    } catch (e) {
+      print("Error: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +69,7 @@ class RecyclingScreen extends StatelessWidget {
           },
         ),
         title: Text(
-          campaign.title,
+          widget.campaign.title,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -77,7 +124,11 @@ class RecyclingScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _buildRoleButtons(context),
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [_buildRoleButtons(context)]),
           ],
         ),
       ),
@@ -96,44 +147,22 @@ class RecyclingScreen extends StatelessWidget {
           ),
           height: 300,
           width: 300,
-          child: Image.asset(campaign.imagePath, fit: BoxFit.cover),
+          child: Image.asset(widget.campaign.imagePath, fit: BoxFit.cover),
         ),
       ),
     );
   }
 
   Widget _buildRoleButtons(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => CitizenScreen(
-                    campaign: campaigns[13],
-                    collectionName: campaigns[13].collectionName ?? 'Recycling',
-                  ),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 175, 226, 130),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30))),
-            child: const Text("Citizen",
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black))),
-        const SizedBox(height: 16),
-        ElevatedButton(
+    if (_userRole == null) {
+      return const SizedBox();
+    }
+    if (_userRole == 'Citizen') {
+      return ElevatedButton(
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => CollectionWorkersScreen(
+                builder: (context) => CitizenScreen(
                   campaign: campaigns[13],
                   collectionName: campaigns[13].collectionName ?? 'Recycling',
                 ),
@@ -145,36 +174,59 @@ class RecyclingScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30))),
-          child: const Text(
-            "Collection Worker",
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DealersScreen(
-                  campaign: campaigns[13],
-                  collectionName: campaigns[13].collectionName ?? 'Recycling',
-                ),
+          child: const Text("Citizen",
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black)));
+    } else if (_userRole == 'Collection Worker') {
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => CollectionWorkersScreen(
+                campaign: campaigns[13],
+                collectionName: campaigns[13].collectionName ?? 'Recycling',
               ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 175, 226, 130),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30))),
-          child: const Text(
-            "Dealer",
-            style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 175, 226, 130),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30))),
+        child: const Text(
+          "Collection Worker",
+          style: TextStyle(
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
         ),
-      ],
-    );
+      );
+    } else if (_userRole == 'Dealer') {
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => DealersScreen(
+                campaign: campaigns[13],
+                collectionName: campaigns[13].collectionName ?? 'Recycling',
+              ),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 175, 226, 130),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 9),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30))),
+        child: const Text(
+          "Dealer",
+          style: TextStyle(
+              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+      );
+    } else {
+      return const SizedBox();
+    }
   }
 }

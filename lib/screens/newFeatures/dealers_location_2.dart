@@ -43,10 +43,6 @@ class _DealerLocationScreenState extends State<DealerLocationScreen> {
     }
   }
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
   @override
   Widget build(BuildContext context) {
     final lat = widget.submissionLocations?['latitude'];

@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:renewa/screens/newFeatures/credit_points.dart';
-import 'package:renewa/screens/profile/coupons_junior.dart';
-import 'package:renewa/screens/profile/coupons_senior.dart';
 import 'package:renewa/screens/profile/profile.dart';
 
 class MainDrawer extends StatelessWidget {

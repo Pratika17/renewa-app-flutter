@@ -61,7 +61,7 @@ class PlantPurchaseScreen extends StatelessWidget {
 class PlantCard extends StatelessWidget {
   final Map<String, dynamic> plant;
 
-  const PlantCard({Key? key, required this.plant}) : super(key: key);
+  const PlantCard({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
