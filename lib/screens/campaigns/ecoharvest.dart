@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:renewa/data/campaigns_data.dart';
 import 'package:renewa/screens/campaigns/covercropping.dart';
-import 'package:renewa/screens/campaigns/drip.dart';
-import 'package:renewa/screens/campaigns/livestock.dart';
 import 'package:renewa/screens/campaigns/terrace.dart';
 
 class EcoHarvestScreen extends StatelessWidget {
@@ -65,20 +63,7 @@ class EcoHarvestScreen extends StatelessWidget {
                           title: 'Cover Cropping',
                         ),
                       ),
-                      GestureDetector(
-                        onTap:(){ Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LiveStockScreen()));},
-                        child: const PathwayCard(
-                          image: 'assets/images/livestock.png',
-                          title: 'Livestock Grazing',
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap:(){ Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DripScreen(campaign: campaigns[11],)));},
-                        child: const PathwayCard(
-                          image: 'assets/images/drip.png',
-                          title: 'Drip Irrigation',
-                        ),
-                      ),
+                      
                     ],
                   ),
                 ],

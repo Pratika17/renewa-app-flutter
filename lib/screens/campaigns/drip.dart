@@ -1,36 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
 
-class DripScreen extends StatelessWidget {
+class DripScreen extends StatefulWidget {
   final Campaign campaign;
 
   const DripScreen({super.key, required this.campaign});
 
-  String getCampaignStatus(Campaign campaign) {
-    DateTime now = DateTime.now();
-    if (now.isBefore(campaign.startDate)) {
-      return 'Upcoming';
-    } else if (now.isAfter(campaign.specificEndDate)) {
-      return 'Past';
-    } else {
-      Duration remainingTime = campaign.specificEndDate.difference(now);
-      int days = remainingTime.inDays;
-      int hours = remainingTime.inHours.remainder(24);
-      int minutes = remainingTime.inMinutes.remainder(60);
+  @override
+  _DripScreenState createState() => _DripScreenState();
+}
 
-      return 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
-    }
+class _DripScreenState extends State<DripScreen> {
+  late Future<Map<String, dynamic>> _campaignDetailsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _campaignDetailsFuture = _fetchCampaignDetails();
   }
 
-  Color getCampaignStatusColor(Campaign campaign) {
+  Future<Map<String, dynamic>> _fetchCampaignDetails() async {
+    final campaignId = widget.campaign.title;
+     
+    final timeQuery = await FirebaseFirestore.instance
+        .collection('Campaigns')
+        .where('name', isEqualTo: campaignId)
+        .get();
+    DateTime? startDate;
+    DateTime? endDate;
+     if (timeQuery.docs.isNotEmpty) {
+      final doc = timeQuery.docs.first;
+      startDate = (doc['start_date'] as Timestamp).toDate();
+
+      endDate = (doc['end_date'] as Timestamp).toDate();
+    }
+    startDate ??= DateTime.now();
+    endDate ??= DateTime.now();
+    
     DateTime now = DateTime.now();
-    if (now.isBefore(campaign.startDate)) {
-      return Colors.orange;
-    } else if (now.isAfter(campaign.specificEndDate)) {
-      return const Color.fromARGB(255, 104, 70, 67);
+
+    String status;
+    if (now.isBefore(startDate)) {
+        status = 'Upcoming';
+    } else if (now.isAfter(endDate)) {
+         status = 'Past';
+    } else {
+          Duration remainingTime = endDate.difference(now);
+          int days = remainingTime.inDays;
+          int hours = remainingTime.inHours.remainder(24);
+          int minutes = remainingTime.inMinutes.remainder(60);
+        status = 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
+    }
+     // Fetch the number of participants (submissions count)
+    final participantsQuery = await FirebaseFirestore.instance
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: campaignId)
+        .where('status', isEqualTo: 'pending')
+        .get();
+    final creditQuery = await FirebaseFirestore.instance
+    .collection('Campaigns')
+    .where('name', isEqualTo: campaignId)
+    .get();
+
+    int participants = participantsQuery.docs.length;
+
+    // Credits (can be static or dynamic)
+    int credits = creditQuery.docs.first['reward_value'];
+    
+    return {
+      'status': status,
+      'participants': participants,
+      'credits': credits,
+      'startDate': startDate,
+      'endDate' : endDate
+      
+    };
+  }
+
+  Color getCampaignStatusColor(String status, DateTime startDate,DateTime endDate) {
+    DateTime now = DateTime.now();
+    if (now.isBefore(startDate)) {
+      return const Color.fromRGBO(254, 249, 195,1);
+    } else if (now.isAfter(endDate)) {
+      return const Color.fromRGBO(217,217,217,1);
     } else {
       return const Color.fromRGBO(174, 239, 188, 1);
     }
@@ -38,8 +92,6 @@ class DripScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String campaignStatus = getCampaignStatus(campaign);
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -48,7 +100,8 @@ class DripScreen extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
-        title: Text(campaign.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(widget.campaign.title,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -58,7 +111,7 @@ class DripScreen extends StatelessWidget {
             _buildImageSection(),
             const SizedBox(height: 16),
             Text(
-              campaign.title,
+              widget.campaign.title,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -66,7 +119,7 @@ class DripScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              campaign.description,
+              widget.campaign.description,
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
@@ -78,7 +131,26 @@ class DripScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildCampaignDetails(context, campaignStatus),
+            FutureBuilder<Map<String, dynamic>>(
+              future: _campaignDetailsFuture,
+              builder: (context, snapshot){
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Text('Error fetching campaign details');
+                } else if (snapshot.hasData) {
+                  final details = snapshot.data!;
+                  final campaignStatus = details['status'];
+                  final participants = details['participants'];
+                  final credits = details['credits'];
+                  final startDate = details['startDate'];
+                  final endDate = details['endDate'];
+                  return _buildCampaignDetails(context, campaignStatus, participants, credits, startDate, endDate);
+                } else {
+                  return const Text('No details found');
+                }
+              }
+            ),
           ],
         ),
       ),
@@ -97,13 +169,13 @@ class DripScreen extends StatelessWidget {
           ),
           height: 300,
           width: 300,
-          child: Image.asset(campaign.imagePath, fit: BoxFit.cover),
+          child: Image.asset(widget.campaign.imagePath, fit: BoxFit.cover),
         ),
       ),
     );
   }
 
-  Widget _buildCampaignDetails(BuildContext context, String campaignStatus) {
+ Widget _buildCampaignDetails(BuildContext context, String campaignStatus, int participants, int credits, DateTime startDate, DateTime endDate) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(35.0),
       child: Container(
@@ -121,7 +193,7 @@ class DripScreen extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    campaign.quest[0],
+                    widget.campaign.quest[0],
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -131,33 +203,32 @@ class DripScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: campaignStatus.contains('Ongoing')
-                          ? Colors.green
-                          : campaignStatus.contains('Upcoming')
-                              ? const Color.fromRGBO(254, 249, 195,1)
-                              : const Color.fromRGBO(217,217,217,1),
-                              foregroundColor: Colors.black
-                    ),
+                        backgroundColor: getCampaignStatusColor(
+                          campaignStatus,startDate,endDate
+                        ),
+                        foregroundColor: Colors.black),
                     child: Text(
-                      campaignStatus.contains('Ongoing')
+                       campaignStatus.contains('Ongoing')
                           ? 'Ongoing'
                           : campaignStatus.contains('Upcoming')
                               ? 'Upcoming'
                               : 'Past',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Text('Region - ${campaign.region}'),
+              Text('Region - ${widget.campaign.region}'),
               const SizedBox(height: 8),
               const Text('Share your drip irrigation setups and receive amazing rewards!'),
               const SizedBox(height: 8),
-              Row(
+                Row(
                 children: [
                   const Icon(Icons.timer),
-                  const SizedBox(width: 8),
+                   const SizedBox(width: 8),
                   Text(campaignStatus),
                 ],
               ),
@@ -166,37 +237,16 @@ class DripScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.credit_card),
                   const SizedBox(width: 8),
-                  Text('${campaign.credits} credits'),
+                  Text('$credits credits'),
                 ],
               ),
-              const SizedBox(height: 8),
-              FutureBuilder<DocumentSnapshot>(
-                future: _fetchParticipants(), // Call the function to fetch participants
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Row(
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(width: 8),
-                        Text('Loading participants...'),
-                      ],
-                    );
-                  } else if (snapshot.hasError) {
-                    return const Text('Error fetching participants');
-                  } else if (snapshot.hasData) {
-                    final data = snapshot.data!.data() as Map<String, dynamic>;
-                    final participants = data['number'] ?? 0;
-                    return Row(
-                      children: [
-                        const Icon(Icons.group),
-                        const SizedBox(width: 8),
-                        Text('$participants participants'),
-                      ],
-                    );
-                  } else {
-                    return const Text('No participants found');
-                  }
-                },
+             const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.group),
+                  const SizedBox(width: 8),
+                  Text('$participants participants'),
+                ],
               ),
               const SizedBox(height: 16),
               Row(
@@ -211,7 +261,7 @@ class DripScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => CampaignQuestScreen(campaign: campaign,collectionName: campaign.collectionName!),
+                          builder: (context) => CampaignQuestScreen(campaign: widget.campaign,collectionName: widget.campaign.collectionName!),
                         ),
                       );
                     },
@@ -225,13 +275,5 @@ class DripScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<DocumentSnapshot> _fetchParticipants() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is signed in.');
-    }
-    return await FirebaseFirestore.instance.collection('Drip Irrigation').doc('Participants').get();
   }
 }

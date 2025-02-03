@@ -49,7 +49,7 @@ final List<Campaign> campaigns = [
     deliverables: 'Here’s how it works:\n 1.Citizens capture a photo of their rainwater harvesting pit at home.\n 2.They upload the photo to the campaign\'s platform.\n 3.Submissions are verified to ensure compliance.\n 4.Participants earn rewards for their contribution to rainwater harvesting.',
     startDate: DateTime(2024, 07, 14),
     specificEndDate: DateTime(2024, 08, 26, 23, 59),
-    quest: ['Rain Drop'],
+    quest: ['WaterWise'],
     region: 'Coimbatore',
   ),
   Campaign(

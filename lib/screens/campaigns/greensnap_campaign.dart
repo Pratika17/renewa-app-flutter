@@ -1,13 +1,118 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
-import 'package:renewa/screens/newFeatures/plantpurchase.dart';
 
-class GreenSnapCampaignScreen extends StatelessWidget {
+class GreenSnapCampaignScreen extends StatefulWidget {
   const GreenSnapCampaignScreen({super.key, required this.campaign});
   final Campaign campaign;
+
+  @override
+  _GreenSnapCampaignScreenState createState() =>
+      _GreenSnapCampaignScreenState();
+}
+
+class _GreenSnapCampaignScreenState extends State<GreenSnapCampaignScreen> {
+  late Future<Map<String, dynamic>> _campaignDetailsFuture;
+  late Future<String?> _userSubscriptionFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _campaignDetailsFuture = _fetchCampaignDetails();
+    _userSubscriptionFuture = _fetchUserSubscription();
+  }
+
+  Future<String?> _fetchUserSubscription() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .get();
+      if (userDoc.exists) {
+        return userDoc['subscription_type'] as String?;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchCampaignDetails() async {
+    const campaignId = "GreenSnap"; // Fixed campaign ID
+
+    final timeQuery = await FirebaseFirestore.instance
+        .collection('Campaigns')
+        .where('name', isEqualTo: campaignId)
+        .get();
+    DateTime? startDate;
+    DateTime? endDate;
+    String eligibility = '';
+
+    if (timeQuery.docs.isNotEmpty) {
+      final doc = timeQuery.docs.first;
+      startDate = (doc['start_date'] as Timestamp).toDate();
+      endDate = (doc['end_date'] as Timestamp).toDate();
+      eligibility = doc['eligibility'] as String;
+    }
+    startDate ??= DateTime.now();
+    endDate ??= DateTime.now();
+
+    DateTime now = DateTime.now();
+
+    String status;
+    if (now.isBefore(startDate)) {
+      status = 'Upcoming';
+    } else if (now.isAfter(endDate)) {
+      status = 'Past';
+    } else {
+      Duration remainingTime = endDate.difference(now);
+      int days = remainingTime.inDays;
+      int hours = remainingTime.inHours.remainder(24);
+      int minutes = remainingTime.inMinutes.remainder(60);
+      status = 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
+    }
+    // Fetch the number of participants (submissions count)
+    final participantsQuery = await FirebaseFirestore.instance
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: campaignId)
+        .where('status', isEqualTo: 'pending')
+        .get();
+    final creditQuery = await FirebaseFirestore.instance
+        .collection('Campaigns')
+        .where('name', isEqualTo: campaignId)
+        .get();
+
+    int participants = participantsQuery.docs.length;
+
+    // Credits (can be static or dynamic)
+    int credits = creditQuery.docs.first['reward_value'];
+
+    return {
+      'status': status,
+      'participants': participants,
+      'credits': credits,
+      'startDate': startDate,
+      'endDate': endDate,
+      'eligibility': eligibility
+    };
+  }
+
+  Color getCampaignStatusColor(
+      String status, DateTime startDate, DateTime endDate) {
+    DateTime now = DateTime.now();
+    if (now.isBefore(startDate)) {
+      return const Color.fromRGBO(254, 249, 195, 1);
+    } else if (now.isAfter(endDate)) {
+      return const Color.fromRGBO(217, 217, 217, 1);
+    } else {
+      return const Color.fromRGBO(174, 239, 188, 1);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,33 +124,30 @@ class GreenSnapCampaignScreen extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
-        title: Text(campaign.title,
+        title: Text(widget.campaign.title,
             style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black, // Button background color
+              backgroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(30), // Optional: for rounded corners
+                borderRadius: BorderRadius.circular(30),
               ),
             ),
             onPressed: () {
-              // Add navigation or logic for the Feed button here
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      const FeedScreen(), // Replace with your Feed screen
+                  builder: (context) => const FeedScreen(),
                 ),
               );
             },
             child: const Text(
               'Feed',
               style: TextStyle(
-                color: Colors.white, // Text color
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 16, // Font size
+                fontSize: 16,
               ),
             ),
           ),
@@ -53,42 +155,22 @@ class GreenSnapCampaignScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(30.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildImageSection(),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text(
-                    campaign.title,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 74, 116, 66),
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const PlantPurchaseScreen(),
-                        ),
-                      );
-                    },
-                    label: const Text('Purchase plants'),
-                    icon: const Icon(Icons.shopping_cart),
-                  ),
-                ],
+              Text(
+                widget.campaign.title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
-                campaign.description,
+                widget.campaign.description,
                 style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 16),
@@ -100,30 +182,61 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              FutureBuilder<Map<String, dynamic>>(
-                future: _fetchCampaignDetails(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return const Text('Error fetching campaign details');
-                  } else if (snapshot.hasData) {
-                    final details = snapshot.data!;
-                    final campaignStatus = details['status'];
-                    final participants = details['participants'];
-                    final credits = details['credits'];
+              FutureBuilder<String?>(
+                  future: _userSubscriptionFuture,
+                  builder: (context, userSnapshot) {
+                    if (userSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (userSnapshot.hasError) {
+                      return const Text('Error fetching user details');
+                    } else if (!userSnapshot.hasData ||
+                        userSnapshot.data == null) {
+                      return const Text('No user details');
+                    } else {
+                      final userSubscription = userSnapshot.data!;
+                      return FutureBuilder<Map<String, dynamic>>(
+                        future: _campaignDetailsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return const Text(
+                                'Error fetching campaign details');
+                          } else if (snapshot.hasData) {
+                            final details = snapshot.data!;
+                            final campaignStatus = details['status'];
+                            final participants = details['participants'];
+                            final credits = details['credits'];
+                            final startDate = details['startDate'];
+                            final endDate = details['endDate'];
+                            final eligibility = details['eligibility'];
 
-                    return _buildCampaignDetails(
-                      context,
-                      campaignStatus,
-                      participants,
-                      credits,
-                    );
-                  } else {
-                    return const Text('No details found');
-                  }
-                },
-              ),
+                            if (userSubscription == eligibility ||
+                                eligibility == 'free') {
+                              return _buildCampaignDetails(
+                                context,
+                                campaignStatus,
+                                participants,
+                                credits,
+                                startDate,
+                                endDate,
+                              );
+                            } else {
+                              return const Text(
+                                'This campaign is not available for your subscription type.',
+                                style: TextStyle(fontSize: 16),
+                              );
+                            }
+                          } else {
+                            return const Text('No details found');
+                          }
+                        },
+                      );
+                    }
+                  }),
             ],
           ),
         ),
@@ -143,14 +256,14 @@ class GreenSnapCampaignScreen extends StatelessWidget {
           ),
           height: 300,
           width: 300,
-          child: Image.asset(campaign.imagePath, fit: BoxFit.cover),
+          child: Image.asset(widget.campaign.imagePath, fit: BoxFit.cover),
         ),
       ),
     );
   }
 
-  Widget _buildCampaignDetails(
-      BuildContext context, String status, int participants, int credits) {
+  Widget _buildCampaignDetails(BuildContext context, String campaignStatus,
+      int participants, int credits, DateTime startDate, DateTime endDate) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(35.0),
       child: Container(
@@ -158,8 +271,7 @@ class GreenSnapCampaignScreen extends StatelessWidget {
           border: Border.all(
             color: const Color.fromARGB(255, 0, 0, 0),
           ),
-          borderRadius:
-              BorderRadius.circular(35.0), // Apply border radius here as well
+          borderRadius: BorderRadius.circular(35.0),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -168,19 +280,46 @@ class GreenSnapCampaignScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Text(
-                    'Campaign Status:',
-                    style: TextStyle(
+                  Text(
+                    widget.campaign.quest[0],
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
-                  Text(status),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: getCampaignStatusColor(
+                          campaignStatus,
+                          startDate,
+                          endDate,
+                        ),
+                        foregroundColor: Colors.black),
+                    child: Text(
+                      campaignStatus.contains('Ongoing')
+                          ? 'Ongoing'
+                          : campaignStatus.contains('Upcoming')
+                              ? 'Upcoming'
+                              : 'Past',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
               const Text('Plant saplings and receive amazing rewards!'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.timer),
+                  const SizedBox(width: 8),
+                  Text(campaignStatus),
+                ],
+              ),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -199,8 +338,7 @@ class GreenSnapCampaignScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween, // Adjust spacing
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
@@ -211,8 +349,8 @@ class GreenSnapCampaignScreen extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => CampaignQuestScreen(
-                            campaign: campaign,
-                            collectionName: campaign.collectionName!,
+                            campaign: widget.campaign,
+                            collectionName: widget.campaign.collectionName!,
                           ),
                         ),
                       );
@@ -227,57 +365,5 @@ class GreenSnapCampaignScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<Map<String, dynamic>> _fetchCampaignDetails() async {
-    final timeQuery = await FirebaseFirestore.instance
-        .collection('Campaigns')
-        .where('name', isEqualTo: "GreenSnap")
-        .get();
-    DateTime? startDate;
-    DateTime? endDate;
-    DateTime now = DateTime.now();
-    if (timeQuery.docs.isNotEmpty) {
-      final doc = timeQuery.docs.first;
-      startDate = (doc['start_date'] as Timestamp).toDate();
-
-      endDate = (doc['end_date'] as Timestamp).toDate();
-    }
-
-    startDate ??= DateTime.now();
-    endDate ??= DateTime.now();
-    print(startDate);
-
-    // Calculate campaign status
-    String status;
-    if (now.isBefore(startDate)) {
-      status = 'Upcoming';
-    } else if (now.isAfter(endDate)) {
-      status = 'Past';
-    } else {
-      status = 'Ongoing';
-    }
-
-    // Fetch the number of participants (submissions count)
-    final participantsQuery = await FirebaseFirestore.instance
-        .collection('Submissions')
-        .where('campaign_id', isEqualTo: "GreenSnap")
-        .where('status', isEqualTo: 'pending')
-        .get();
-    final creditQuery = await FirebaseFirestore.instance
-    .collection('Campaigns')
-    .where('name', isEqualTo: "GreenSnap")
-    .get();
-
-    int participants = participantsQuery.docs.length;
-
-    // Credits (can be static or dynamic)
-    int credits = creditQuery.docs.first['reward_value'];
-
-    return {
-      'status': status,
-      'participants': participants,
-      'credits': credits,
-    };
   }
 }

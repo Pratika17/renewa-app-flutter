@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:renewa/models/campaign_model.dart';
+import 'package:renewa/screens/campaign_upload.dart';
 import 'package:renewa/screens/campaigns/quizes1.dart';
 
 class CoverCropQuestScreen extends StatefulWidget {
@@ -20,73 +21,70 @@ class CoverCropQuestScreen extends StatefulWidget {
   final String collectionName;
 
   @override
-  State<CoverCropQuestScreen> createState() {
-    return _CoverCropQuestScreenState();
-  }
+  State<CoverCropQuestScreen> createState() => _CoverCropQuestScreenState();
 }
 
 class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
-  late bool isJoined;
   late bool isJoining;
   User? currentUser;
-  int participantsCount = 0;
+
+  // Variables to store fetched campaign details
+  DateTime? campaignStartDate;
+  DateTime? campaignEndDate;
+  int campaignCredits = 0;
 
   @override
   void initState() {
     super.initState();
-    isJoined = false;
     isJoining = false;
     fetchCurrentUser();
-    fetchParticipantsCount();
+    fetchCampaignDetails(); // Fetch campaign details
   }
 
   Future<void> fetchCurrentUser() async {
     currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      await checkIfJoined();
-    }
   }
 
-  Future<void> checkIfJoined() async {
-    final userDocRef = FirebaseFirestore.instance
-        .collection(widget.collectionName)
-        .doc('Participants')
-        .collection('Users')
-        .doc(currentUser!.uid);
-
-    DocumentSnapshot userSnapshot = await userDocRef.get();
-    if (userSnapshot.exists) {
-      setState(() {
-        isJoined = true;
-      });
-    }
+  Future<int> fetchParticipantsCount() async {
+    final participantsQuery = await FirebaseFirestore.instance
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: widget.campaign.title)
+        .where('status', isEqualTo: 'pending')
+        .get();
+    return participantsQuery.docs.length;
   }
 
-  Future<void> fetchParticipantsCount() async {
-    final participantsDocRef = FirebaseFirestore.instance
-        .collection(widget.collectionName)
-        .doc('Participants');
+  Future<void> fetchCampaignDetails() async {
+    final campaignQuery = await FirebaseFirestore.instance
+        .collection('Campaigns')
+        .where('name', isEqualTo: widget.campaign.quest[0])
+        .get();
 
-    DocumentSnapshot snapshot = await participantsDocRef.get();
-    if (snapshot.exists) {
+    if (campaignQuery.docs.isNotEmpty) {
+      final doc = campaignQuery.docs.first;
       setState(() {
-        participantsCount = snapshot['number'];
+        campaignStartDate = (doc['start_date'] as Timestamp).toDate();
+        campaignEndDate = (doc['end_date'] as Timestamp).toDate();
+        campaignCredits = doc['reward_value'];
       });
     }
   }
 
   String getCampaignStatus() {
     DateTime now = DateTime.now();
-    if (now.isBefore(widget.campaign.startDate)) {
-      Duration timeUntilStart = widget.campaign.startDate.difference(now);
+    if (campaignStartDate == null || campaignEndDate == null) {
+      return 'Loading...'; // Or some default status
+    }
+    if (now.isBefore(campaignStartDate!)) {
+      Duration timeUntilStart = campaignStartDate!.difference(now);
       int days = timeUntilStart.inDays;
       int hours = timeUntilStart.inHours.remainder(24);
       int minutes = timeUntilStart.inMinutes.remainder(60);
       return 'Upcoming - Starts in ${days}d ${hours}h ${minutes}m';
-    } else if (now.isAfter(widget.campaign.specificEndDate)) {
+    } else if (now.isAfter(campaignEndDate!)) {
       return 'Past';
     } else {
-      Duration remainingTime = widget.campaign.specificEndDate.difference(now);
+      Duration remainingTime = campaignEndDate!.difference(now);
       int days = remainingTime.inDays;
       int hours = remainingTime.inHours.remainder(24);
       int minutes = remainingTime.inMinutes.remainder(60);
@@ -102,51 +100,17 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
     });
 
     try {
-      final participantsDocRef = FirebaseFirestore.instance
-          .collection(widget.collectionName)
-          .doc('Participants');
-
-      final userDocRef = participantsDocRef
-          .collection('Users')
-          .doc(currentUser!.uid);
-
-      DocumentSnapshot userSnapshot = await userDocRef.get();
-
-      if (!userSnapshot.exists) {
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          DocumentSnapshot snapshot = await transaction.get(participantsDocRef);
-
-          if (!snapshot.exists) {
-            throw Exception("Campaign does not exist!");
-          }
-
-          int currentParticipants = snapshot['number'];
-          transaction.update(participantsDocRef, {'number': currentParticipants + 1});
-          transaction.set(userDocRef, {'joined': true});
-
-          setState(() {
-            participantsCount = currentParticipants + 1;
-            isJoined = true;
-          });
-        });
-      }
+      // No need for participants document reference. User will have a submission document
+      // Navigate to the next screen
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => CampaignUploadScreen(campaign: widget.campaign),
+      ));
     } catch (e) {
       // Handle errors if needed
     } finally {
       setState(() {
         isJoining = false;
       });
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => QuizScreen(
-            questions: widget.questions,
-            options: widget.options,
-            campaignTitle: widget.campaign.title,
-            questTitle: widget.campaign.quest[0],
-          ),
-        ),
-      );
     }
   }
 
@@ -154,7 +118,6 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
   Widget build(BuildContext context) {
     String campaignStatus = getCampaignStatus();
     bool isCampaignOngoing = campaignStatus.startsWith('Ongoing');
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -163,7 +126,8 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text('Quest', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        title: const Text('Quest',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -174,7 +138,9 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Quest - ${widget.campaign.quest[0]}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Quest - ${widget.campaign.quest[0]}',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
@@ -185,19 +151,23 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                         : isCampaignOngoing
                             ? joinQuest
                             : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => QuizScreen(
-                                      questions: widget.questions,
-                                      options: widget.options,
-                                      campaignTitle: widget.campaign.title,
-                                      questTitle: widget.campaign.quest[0],
-                                    ),
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => QuizScreen(
+                                    questions: widget.questions,
+                                    options: widget.options,
+                                    campaignTitle: widget.campaign.title,
+                                    questTitle: widget.campaign.quest[0],
                                   ),
-                                );
+                                ));
                               },
-                    icon: isJoining ? const CircularProgressIndicator(color: Colors.white) : const Icon(Icons.arrow_forward),
-                    label: Text(isCampaignOngoing ? (isJoined ? 'Joined' : 'Join Quest') : (campaignStatus.startsWith('Upcoming') ? 'Upcoming' : 'Past')),
+                    icon: isJoining
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Icon(Icons.arrow_forward),
+                    label: Text(isCampaignOngoing
+                        ? 'Join Quest'
+                        : (campaignStatus.startsWith('Upcoming')
+                            ? 'Upcoming'
+                            : 'Past')),
                   ),
                 ],
               ),
@@ -222,37 +192,82 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('STARTS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(DateFormat('MMM dd, yyyy').format(widget.campaign.startDate), style: const TextStyle(fontSize: 12)),
+                            const Text('STARTS',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(
+                                campaignStartDate != null
+                                    ? DateFormat('MMM dd, yyyy')
+                                        .format(campaignStartDate!)
+                                    : 'Loading...',
+                                style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('ENDS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(DateFormat('MMM dd, yyyy').format(widget.campaign.specificEndDate), style: const TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('CREDITS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('1500', style: TextStyle(fontSize: 12)),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('CREDIT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('${widget.campaign.credits}', style: const TextStyle(fontSize: 12)),
+                            const Text('ENDS',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(
+                                campaignEndDate != null
+                                    ? DateFormat('MMM dd, yyyy')
+                                        .format(campaignEndDate!)
+                                    : 'Loading...',
+                                style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('PLAYERS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('$participantsCount', style: const TextStyle(fontSize: 12)),
+                            const Text('CREDIT',
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('$campaignCredits',
+                                style: const TextStyle(fontSize: 12)),
                           ],
+                        ),
+                        FutureBuilder<int>(
+                          future: fetchParticipantsCount(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('PLAYERS',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Loading...',
+                                      style: TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            } else if (snapshot.hasError) {
+                              return const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('PLAYERS',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('Error', style: TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            } else {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('PLAYERS',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold)),
+                                  Text('${snapshot.data}',
+                                      style: const TextStyle(fontSize: 12)),
+                                ],
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -270,7 +285,8 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(widget.campaign.outcomes, style: const TextStyle(fontSize: 16)),
+              Text(widget.campaign.outcomes,
+                  style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 16),
               const Divider(color: Colors.black),
               const Text(
@@ -281,7 +297,8 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(widget.campaign.introduction, style: const TextStyle(fontSize: 16)),
+              Text(widget.campaign.introduction,
+                  style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 16),
               const Divider(color: Colors.black),
               const Text(
@@ -292,7 +309,8 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(widget.campaign.deliverables, style: const TextStyle(fontSize: 16)),
+              Text(widget.campaign.deliverables,
+                  style: const TextStyle(fontSize: 16)),
             ],
           ),
         ),

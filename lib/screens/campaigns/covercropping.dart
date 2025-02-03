@@ -5,11 +5,18 @@ import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/data/campaigns_data.dart';
 import 'package:renewa/screens/campaigns/ccquest.dart';
 
-class CoverCroppingScreen extends StatelessWidget {
+class CoverCroppingScreen extends StatefulWidget {
   CoverCroppingScreen({super.key});
 
-  final Campaign campaign = campaigns[4];
-  final Campaign campaign1 = campaigns[5];
+  @override
+  _CoverCroppingScreenState createState() => _CoverCroppingScreenState();
+}
+
+class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
+  late Future<Map<String, dynamic>> _campaign1DetailsFuture;
+  late Future<Map<String, dynamic>> _campaign2DetailsFuture;
+  late Future<Map<String, dynamic>> _campaign3DetailsFuture;
+
   final List<String> questions1 = [
     'What is cover cropping and its purpose?',
     'What are the benefits of cover cropping?',
@@ -81,28 +88,75 @@ class CoverCroppingScreen extends StatelessWidget {
     ['a. Vetch', 'b. Oats', 'c. Mustard', 'd. Radish']
   ];
 
-  String getCampaignStatus(Campaign campaign) {
+  @override
+  void initState() {
+    super.initState();
+    _campaign1DetailsFuture = _fetchCampaignDetails("Cover Cropping");
+    _campaign2DetailsFuture = _fetchCampaignDetails("Discovering");
+    _campaign3DetailsFuture = _fetchCampaignDetails("Cover Cropping");
+  }
+
+  Future<Map<String, dynamic>> _fetchCampaignDetails(String campaignId) async {
+    final timeQuery = await FirebaseFirestore.instance
+        .collection('Campaigns')
+        .where('name', isEqualTo: campaignId)
+        .get();
+    DateTime? startDate;
+    DateTime? endDate;
+    if (timeQuery.docs.isNotEmpty) {
+      final doc = timeQuery.docs.first;
+      startDate = (doc['start_date'] as Timestamp).toDate();
+      endDate = (doc['end_date'] as Timestamp).toDate();
+    }
+    startDate ??= DateTime.now();
+    endDate ??= DateTime.now();
+
     DateTime now = DateTime.now();
-    if (now.isBefore(campaign.startDate)) {
-      return 'Upcoming';
-    } else if (now.isAfter(campaign.specificEndDate)) {
-      return 'Ended';
+
+    String status;
+    if (now.isBefore(startDate)) {
+      status = 'Upcoming';
+    } else if (now.isAfter(endDate)) {
+      status = 'Past';
     } else {
-      Duration remainingTime = campaign.specificEndDate.difference(now);
+      Duration remainingTime = endDate.difference(now);
       int days = remainingTime.inDays;
       int hours = remainingTime.inHours.remainder(24);
       int minutes = remainingTime.inMinutes.remainder(60);
-
-      return 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
+      status = 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
     }
+    // Fetch the number of participants (submissions count)
+    final participantsQuery = await FirebaseFirestore.instance
+        .collection('Submissions')
+        .where('campaign_id', isEqualTo: campaignId)
+        .where('status', isEqualTo: 'pending')
+        .get();
+    final creditQuery = await FirebaseFirestore.instance
+        .collection('Campaigns')
+        .where('name', isEqualTo: campaignId)
+        .get();
+
+    int participants = participantsQuery.docs.length;
+
+    // Credits (can be static or dynamic)
+    int credits = creditQuery.docs.first['reward_value'];
+
+    return {
+      'status': status,
+      'participants': participants,
+      'credits': credits,
+      'startDate': startDate,
+      'endDate': endDate,
+    };
   }
 
-  Color getCampaignStatusColor(Campaign campaign) {
+  Color getCampaignStatusColor(
+      String status, DateTime startDate, DateTime endDate) {
     DateTime now = DateTime.now();
-    if (now.isBefore(campaign.startDate)) {
-      return Colors.orange;
-    } else if (now.isAfter(campaign.specificEndDate)) {
-      return const Color.fromARGB(255, 104, 70, 67);
+    if (now.isBefore(startDate)) {
+      return const Color.fromRGBO(254, 249, 195, 1);
+    } else if (now.isAfter(endDate)) {
+      return const Color.fromRGBO(217, 217, 217, 1);
     } else {
       return const Color.fromRGBO(174, 239, 188, 1);
     }
@@ -173,14 +227,44 @@ class CoverCroppingScreen extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            _buildCampaignDetails(context, getCampaignStatus(campaign),
-                campaigns[4], 0, questions1, options1),
+            FutureBuilder<Map<String, dynamic>>(
+              future: _campaign1DetailsFuture,
+              builder: (context, snapshot) {
+                return _buildCampaignDetails(
+                  context,
+                  snapshot,
+                  campaigns[4],
+                  questions1,
+                  options1,
+                );
+              },
+            ),
             const SizedBox(height: 16.0),
-            _buildCampaignDetails(context, getCampaignStatus(campaigns[5]),
-                campaigns[5], 0, questions2, options2),
+            FutureBuilder<Map<String, dynamic>>(
+              future: _campaign2DetailsFuture,
+              builder: (context, snapshot) {
+                return _buildCampaignDetails(
+                  context,
+                  snapshot,
+                  campaigns[5],
+                  questions2,
+                  options2,
+                );
+              },
+            ),
             const SizedBox(height: 16.0),
-            _buildCampaignDetails(context, getCampaignStatus(campaigns[6]),
-                campaigns[6], 0, questions3, options3),
+            FutureBuilder<Map<String, dynamic>>(
+              future: _campaign3DetailsFuture,
+              builder: (context, snapshot) {
+                return _buildCampaignDetails(
+                  context,
+                  snapshot,
+                  campaigns[6],
+                  questions3,
+                  options3,
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -231,11 +315,24 @@ class CoverCroppingScreen extends StatelessWidget {
 
   Widget _buildCampaignDetails(
       BuildContext context,
-      String campaignStatus,
+      AsyncSnapshot<Map<String, dynamic>> snapshot,
       Campaign campaign,
-      int questIndex,
       List<String> questions,
       List<List<String>> options) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (snapshot.hasError) {
+      return const Text('Error fetching campaign details');
+    } else if (!snapshot.hasData) {
+      return const Text('No details found');
+    }
+
+    final details = snapshot.data!;
+    final campaignStatus = details['status'];
+    final participants = details['participants'];
+    final credits = details['credits'];
+    final startDate = details['startDate'];
+    final endDate = details['endDate'];
     return ClipRRect(
       borderRadius: BorderRadius.circular(35.0),
       child: Container(
@@ -254,7 +351,7 @@ class CoverCroppingScreen extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    campaign.quest[questIndex],
+                    campaign.quest[0],
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -264,11 +361,11 @@ class CoverCroppingScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: campaignStatus.contains('Ongoing')
-                            ? const Color.fromRGBO(174, 239, 188, 1)
-                            : campaignStatus.contains('Upcoming')
-                                ? const Color.fromRGBO(254, 249, 195, 1)
-                                : const Color.fromRGBO(217, 217, 217, 1),
+                        backgroundColor: getCampaignStatusColor(
+                          campaignStatus,
+                          startDate,
+                          endDate,
+                        ),
                         foregroundColor: Colors.black),
                     child: Text(
                       campaignStatus.contains('Ongoing')
@@ -296,37 +393,16 @@ class CoverCroppingScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.credit_card),
                   const SizedBox(width: 8),
-                  Text('${campaign.credits} credits'),
+                  Text('$credits credits'),
                 ],
               ),
               const SizedBox(height: 8),
-              FutureBuilder<DocumentSnapshot>(
-                future: _fetchParticipants(campaign.collectionName!),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Row(
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(width: 8),
-                        Text('Loading participants...'),
-                      ],
-                    );
-                  } else if (snapshot.hasError) {
-                    return const Text('Error fetching participants');
-                  } else if (snapshot.hasData) {
-                    final data = snapshot.data!.data() as Map<String, dynamic>;
-                    final participants = data['number'] ?? 0;
-                    return Row(
-                      children: [
-                        const Icon(Icons.group),
-                        const SizedBox(width: 8),
-                        Text('$participants participants'),
-                      ],
-                    );
-                  } else {
-                    return const Text('No participants found');
-                  }
-                },
+              Row(
+                children: [
+                  const Icon(Icons.group),
+                  const SizedBox(width: 8),
+                  Text('$participants participants'),
+                ],
               ),
               const SizedBox(height: 16),
               Row(
@@ -360,16 +436,5 @@ class CoverCroppingScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<DocumentSnapshot> _fetchParticipants(String collectionName) async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is signed in.');
-    }
-    return await FirebaseFirestore.instance
-        .collection(collectionName)
-        .doc('Participants')
-        .get();
   }
 }
