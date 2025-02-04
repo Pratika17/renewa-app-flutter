@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:renewa/screens/about_us.dart';
+import 'package:renewa/screens/contactus_page.dart';
 
 final _firebaseAuth = FirebaseAuth.instance;
 
@@ -91,19 +92,41 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Positioned(
             top: 30,
             right: 30,
-            child: TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AboutUsScreen()),
-                );
-              },
-              child: const Text(
-                'About Us',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
+            child: Row(
+              children: [
+                TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>const ContactUsScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Contact Us',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AboutUsScreen()),
+                    );
+                  },
+                  child: const Text(
+                    'About Us',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                ),
+              ],
             ),
           ),
           // Form Container

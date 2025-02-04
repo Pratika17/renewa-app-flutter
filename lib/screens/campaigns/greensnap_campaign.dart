@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/feed.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_quests.dart';
+import 'package:renewa/screens/newFeatures/plantpurchase.dart';
 
 class GreenSnapCampaignScreen extends StatefulWidget {
   const GreenSnapCampaignScreen({super.key, required this.campaign});
@@ -161,12 +162,32 @@ class _GreenSnapCampaignScreenState extends State<GreenSnapCampaignScreen> {
             children: [
               _buildImageSection(),
               const SizedBox(height: 16),
-              Text(
-                widget.campaign.title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  Text(
+                    widget.campaign.title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 74, 116, 66),
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const PlantPurchaseScreen(),
+                        ),
+                      );
+                    },
+                    label: const Text('Purchase plants'),
+                    icon: const Icon(Icons.shopping_cart),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               Text(

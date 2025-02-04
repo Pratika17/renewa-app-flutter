@@ -3,14 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class ContactUsScreen extends StatelessWidget {
-  ContactUsScreen({super.key});
+class ContactUsScreen extends StatefulWidget {
+  const ContactUsScreen({Key? key}) : super(key: key);
 
+  @override
+  State<ContactUsScreen> createState() => _ContactUsScreenState();
+}
+
+class _ContactUsScreenState extends State<ContactUsScreen> {
   final _form = GlobalKey<FormState>();
-
-  late final String _enteredName;
-  late final String _enteredNumber;
-  late final String _enteredComments;
+  late String _enteredName;
+  late String _enteredNumber;
+  late String _enteredComments;
+  bool _isSubmitting = false;
 
   void _submit(BuildContext context) async {
     final isValid = _form.currentState!.validate();
@@ -21,25 +26,70 @@ class ContactUsScreen extends StatelessWidget {
 
     _form.currentState!.save();
 
+    setState(() {
+      _isSubmitting = true;
+    });
+
     try {
-      final authenticatedUser = FirebaseAuth.instance.currentUser!;
-      await FirebaseFirestore.instance
-          .collection('ContactUs')
-          .doc(authenticatedUser.uid)
-          .set({
-        'Name': _enteredName,
-        'ContactNumber': _enteredNumber,
-        'Comments': _enteredComments,
-      });
+      final authenticatedUser = FirebaseAuth.instance.currentUser;
+      Map<String, dynamic> submissionData = {
+        'entered_name': _enteredName,
+        'contact_number': _enteredNumber,
+        'comments': _enteredComments,
+        'status': 'pending',
+        'created_at': FieldValue.serverTimestamp(),
+        'logged_in': authenticatedUser != null ? 'yes' : 'no', // Add logged_in field
+      };
+
+      if (authenticatedUser != null) {
+        final userEmail = authenticatedUser.email;
+        submissionData['user_email'] = userEmail;
+
+        // Fetch user name from 'Users' collection based on email
+        final userQuery = await FirebaseFirestore.instance
+            .collection('Users')
+            .where('user_email', isEqualTo: userEmail)
+            .get();
+
+        if (userQuery.docs.isNotEmpty) {
+          final userData = userQuery.docs.first.data() as Map<String, dynamic>;
+          final userName = userData['user_name'];
+          submissionData['user_name'] = userName;
+        } else {
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('User data not found.  Submit failed.'),
+            ),
+          );
+          setState(() {
+            _isSubmitting = false;
+          });
+          return; // Exit the function if user data is not found
+        }
+      }
+
+      await FirebaseFirestore.instance.collection('ContactUs').add(submissionData);
+
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Successfully submitted!'),
+        ),
+      );
 
       Navigator.of(context).pop(); // Pop the screen after successful submission
-    } on FirebaseAuthException catch (error) {
+    } on FirebaseException catch (error) {  // Changed exception type
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.message ?? 'Submit failed.'),
         ),
       );
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 
@@ -199,8 +249,16 @@ class ContactUsScreen extends StatelessWidget {
                                     const Color.fromRGBO(0, 105, 92, 1),
                                 foregroundColor: Colors.white,
                               ),
-                              onPressed: () => _submit(context),
-                              child: const Text('Submit'),
+                              onPressed: _isSubmitting ? null : () => _submit(context),
+                              child: _isSubmitting
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text('Submit'),
                             ),
                           ],
                         ),

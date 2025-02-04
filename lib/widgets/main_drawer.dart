@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/screens/newFeatures/credit_points.dart';
 import 'package:renewa/screens/newFeatures/premium_screen.dart';
 import 'package:renewa/screens/profile/profile.dart';
+import 'package:renewa/screens/newFeatures/donate_screen.dart'; // Import the donate screen
 
 class MainDrawer extends StatefulWidget {
   const MainDrawer({super.key});
@@ -214,6 +215,24 @@ class _MainDrawerState extends State<MainDrawer> {
             const Center(
               child: CircularProgressIndicator(),
             ),
+          ListTile( // Donate Button
+            leading: const Icon(
+              Icons.favorite, // Changed icon to something donation related
+              size: 26,
+              color: Colors.green,
+            ),
+            title: Text(
+              'Donate',
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  color: Theme.of(context).colorScheme.onBackground,
+                  fontSize: 24),
+            ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => const DonateScreen()),
+              );
+            },
+          ),
           ListTile(
             leading: Icon(
               Icons.exit_to_app,

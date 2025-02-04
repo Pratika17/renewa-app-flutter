@@ -174,11 +174,7 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: isJoining
-                        ? null
-                        : isCampaignOngoing
-                            ? joinQuest
-                            : () {
+                    onPressed:() {
                                 //Navigator.of(context).push(MaterialPageRoute(
                                   //builder: (context) => QuizScreen(),
                                 //));
@@ -194,7 +190,7 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                                                 child:
                                                     CircularProgressIndicator());
                                           } else if (snapshot.hasError) {
-                                            return Text(
+                                            return const Text(
                                                 'Error fetching quiz details');
                                           } else if (!snapshot.hasData ||
                                               snapshot.data!.isEmpty) {

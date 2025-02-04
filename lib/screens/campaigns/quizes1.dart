@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class QuizScreen extends StatefulWidget {
-  final String questTitle; // Changed to questTitle
+  final String questTitle;
   final String campaignTitle;
   final List<Map<String, dynamic>> questions;
   final List<List<String>> options;
@@ -25,15 +25,73 @@ class _QuizScreenState extends State<QuizScreen> {
   int _score = 0;
   String? _selectedAnswer;
   List<String?> _userAnswers = [];
+  bool _hasSubmitted = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _userAnswers = List<String?>.filled(widget.questions.length, null);
+    _checkIfAlreadySubmitted();
+  }
+
+  Future<void> _checkIfAlreadySubmitted() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final submissionQuery = await FirebaseFirestore.instance
+          .collection('QSubmissions')
+          .where('user_email', isEqualTo: user.email)
+          .where('status', isEqualTo: 'pending')
+          .where('campaignTitle', isEqualTo: widget.campaignTitle)
+          .get();
+
+      setState(() {
+        _hasSubmitted = submissionQuery.docs.isNotEmpty;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_hasSubmitted) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Quiz: ${widget.questTitle}'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              "You have already submitted your answers. Please wait for approval.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Quiz: ${widget.questTitle}'),
@@ -107,82 +165,87 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _submitQuiz() async {
-  int tempScore = 0; // Local score to calculate before updating state
+    int tempScore = 0; // Local score to calculate before updating state
 
-  // Calculate the score and add submission to Firestore
-  for (int i = 0; i < widget.questions.length; i++) {
-    // Get the correct answer ID from the question
-    final String correctAnswerId = widget.questions[i]['correctAnswer'];
+    // Calculate the score and add submission to Firestore
+    for (int i = 0; i < widget.questions.length; i++) {
+      // Get the correct answer ID from the question
+      final String correctAnswerId = widget.questions[i]['correctAnswer'];
 
-    // Find the correct option text that corresponds to the correct answer ID
+      // Find the correct option text that corresponds to the correct answer ID
+      try {
+        final correctOption = widget.questions[i]['options'].firstWhere(
+            (option) => option['text'] == _userAnswers[i]);
+
+        if (_userAnswers[i] == correctOption['text']) {
+          tempScore++;
+        }
+      } catch (e) {
+        // Handle the case where no matching option is found (or other errors)
+        print('Error finding correct option: $e');
+        // You might want to log this or take other actions.
+        // It could mean your data in Firestore is inconsistent.
+      }
+    }
+
     try {
-      final correctOption = widget.questions[i]['options'].firstWhere(
-          (option) => option['text'] == _userAnswers[i]);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Fetch user data from 'Users' collection
+        final userQuery = await FirebaseFirestore.instance
+            .collection('Users')
+            .where('user_email', isEqualTo: user.email)
+            .get();
 
-      if (_userAnswers[i] == correctOption['text']) {
-        tempScore++;
+        if (userQuery.docs.isNotEmpty) {
+          final userData = userQuery.docs.first.data();
+          final userName = userData['user_name'];
+          String questName = widget.questTitle; // Use widget.questTitle directly
+
+          // Add submission to 'QSubmissions' collection
+          await FirebaseFirestore.instance.collection('QSubmissions').add({
+            'user_name': userName,
+            'user_email': user.email,
+            'created_at': FieldValue.serverTimestamp(),
+            'quest_name': questName,
+            'status': 'pending',
+            'answers': _userAnswers,
+            'score': tempScore, // Store the score
+            'campaignTitle': widget.campaignTitle,
+          });
+
+          setState(() {
+            _hasSubmitted = true; // Update the state to show the message
+          });
+
+          // Show the result
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Quiz Result'),
+                content: Text(
+                    'You scored $tempScore out of ${widget.questions.length}'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop(); // Go back to the previous screen
+                    },
+                    child: const Text('Close'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // Handle the case where user data is not found
+          print('User data not found in "Users" collection');
+        }
       }
     } catch (e) {
-      // Handle the case where no matching option is found (or other errors)
-      print('Error finding correct option: $e');
-      // You might want to log this or take other actions.
-      // It could mean your data in Firestore is inconsistent.
+      print('Error submitting quiz: $e');
+      // Handle errors
     }
   }
-
-  try {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      // Fetch user data from 'Users' collection
-      final userQuery = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('user_email', isEqualTo: user.email)
-          .get();
-
-      if (userQuery.docs.isNotEmpty) {
-        final userData = userQuery.docs.first.data();
-        final userName = userData['user_name'];
-        String questName = widget.questTitle; // Use widget.questTitle directly
-        // Add submission to 'QSubmissions' collection
-        await FirebaseFirestore.instance.collection('QSubmissions').add({
-          'user_name': userName,
-          'user_email': user.email,
-          'created_at': FieldValue.serverTimestamp(),
-          'quest_name': questName,
-          'status': 'pending',
-          'answers': _userAnswers,
-          'score': tempScore, // Store the score
-          'campaignTitle': widget.campaignTitle,
-        });
-
-        // Show the result
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Quiz Result'),
-              content: Text(
-                  'You scored $tempScore out of ${widget.questions.length}'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    Navigator.of(context).pop(); // Go back to the previous screen
-                  },
-                  child: const Text('Close'),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        // Handle the case where user data is not found
-        print('User data not found in "Users" collection');
-      }
-    }
-  } catch (e) {
-    print('Error submitting quiz: $e');
-    // Handle errors
-  }
-}
 }

@@ -118,7 +118,7 @@ final List<Campaign> campaigns = [
     deliverables: 'Here are the simplified steps for the competition:\n 1.Register online.\n 2.Take the quiz and Submit your answers.\n 3.Await results.\n 4.Earn rewards for top scores.\n 5.Take action for cover cropping.\n 6.Share feedback for improvement.',
     startDate: DateTime(2024, 03, 24),
     specificEndDate: DateTime(2024, 07, 12, 23, 59),
-    quest: ['Why it Matters?','Cover Cropping Fundamentals','Why it matters?'],
+    quest: ['Why it matters?','Cover Cropping Fundamentals','Why it matters?'],
     region: 'Coimbatore',
   ),
   Campaign(

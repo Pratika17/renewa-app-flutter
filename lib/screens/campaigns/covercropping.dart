@@ -23,7 +23,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
     _quizzesFuture = _fetchQuizzes();
     _campaign1DetailsFuture = _fetchCampaignDetails("Cover Cropping");
     _campaign2DetailsFuture = _fetchCampaignDetails("Discovering");
-    _campaign3DetailsFuture = _fetchCampaignDetails("Cover Cropping");
+    _campaign3DetailsFuture = _fetchCampaignDetails("Why it matters?");
   }
 
   Future<List<Map<String, dynamic>>> _fetchQuizzes() async {

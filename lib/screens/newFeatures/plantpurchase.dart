@@ -7,7 +7,6 @@ class PlantPurchaseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text("Plants Nursery"),
@@ -30,7 +29,7 @@ class PlantPurchaseScreen extends StatelessWidget {
 
           return GridView.builder(
             padding: const EdgeInsets.all(8.0),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 8.0,
               mainAxisSpacing: 8.0,
@@ -65,107 +64,122 @@ class PlantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        color: Colors.white,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Display image if available
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: plant["imagePath"] != null && plant["imagePath"].isNotEmpty
-                ? Image.network(
-                    plant["imagePath"],
-                    height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  )
-                : Container(
-                    height: 150,
-                    width: double.infinity,
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image, size: 50, color: Colors.grey),
-                  ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = constraints.maxWidth;
+        final imageHeight = cardWidth * 0.6; // Dynamic image height
+
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade300),
+            color: Colors.white,
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    plant["name"] ?? "Unknown Plant",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Text(
-                        "₹ ${plant["price"]}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 51, 99, 53),
-                        ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Display image if available
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
+                child: plant["imagePath"] != null && plant["imagePath"].isNotEmpty
+                    ? Image.network(
+                        plant["imagePath"],
+                        height: imageHeight, // Dynamic height
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        height: imageHeight, // Dynamic height
+                        width: double.infinity,
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image, size: 50, color: Colors.grey),
                       ),
-                      if (plant["originalPrice"] != null) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          "₹ ${plant["originalPrice"]}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            decoration: TextDecoration.lineThrough,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          plant["discount"] ?? "",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 14, color: Colors.orange),
-                      const SizedBox(width: 4),
-                      Text(
-                        plant["rating"].toString() ?? "",
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "${plant["reviews"]} Reviews" ?? "",
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Earliest Delivery: ${plant["delivery"]}" ?? "",
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
               ),
-            ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plant["name"] ?? "Unknown Plant",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: cardWidth * 0.08, // Dynamic font size
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Wrap( // Use Wrap widget
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            "₹ ${plant["price"]}",
+                            style: TextStyle(
+                              fontSize: cardWidth * 0.1, // Dynamic font size
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 51, 99, 53),
+                            ),
+                          ),
+                          if (plant["originalPrice"] != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              "₹ ${plant["originalPrice"]}",
+                              style: TextStyle(
+                                fontSize: cardWidth * 0.06, // Dynamic font size
+                                decoration: TextDecoration.lineThrough,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              plant["discount"] ?? "",
+                              style: TextStyle(
+                                fontSize: cardWidth * 0.06, // Dynamic font size
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, size: 14, color: Colors.orange),
+                          const SizedBox(width: 4),
+                          Text(
+                            plant["rating"].toString() ?? "",
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              "${plant["reviews"]} Reviews" ?? "",
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Flexible(
+                        child: Text(
+                          "Earliest Delivery: ${plant["delivery"]}" ?? "",
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
