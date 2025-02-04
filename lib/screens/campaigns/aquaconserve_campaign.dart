@@ -35,7 +35,7 @@ class AquaConserveCampaignScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'Aqua Conserve introduces a pioneering concept to incentivize environmentally conscious behaviors by rewarding individuals for engaging in sustainable practices related to water conservation. Participants earn rewards for capturing and uploading photos of eco-friendly actions such as recycling greywater, utilizing water-efficient fixtures, and implementing rainwater harvesting. By participating in Aqua Conserve, individuals not only contribute to global water sustainability efforts but also receive recognition and incentives for their commitment to a greener planet.',
+                    'Aqua Conserve introduces a pioneering concept to incentivize environmentally conscious behaviors by rewarding individuals for engaging in sustainable practices related to water conservation. Participants earn rewards for capturing and uploading photos of eco-friendly actions such as recycling greywater, utilizing water-efficient fixtures. By participating in Aqua Conserve, individuals not only contribute to global water sustainability efforts but also receive recognition and incentives for their commitment to a greener planet.',
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),

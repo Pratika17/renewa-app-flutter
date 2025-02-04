@@ -43,6 +43,27 @@ class _MangroveScreenState extends State<MangroveScreen> {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => MangroveEventsScreen(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromRGBO(174, 239, 188, 1),
+              foregroundColor: Colors.black,
+            ),
+            child: const Text(
+              'Ongoing Events',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
@@ -79,25 +100,7 @@ class _MangroveScreenState extends State<MangroveScreen> {
               '3. Carbon sequestration: Mangrove trees are highly efficient at capturing and storing carbon dioxide from the atmosphere. Their submerged roots and organic-rich soil trap carbon, making mangrove forests one of the most effective natural carbon sinks on the planet. Protecting and restoring mangrove habitats can help mitigate climate change by reducing greenhouse gas emissions and much more.',
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => MangroveEventsScreen(),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromRGBO(174, 239, 188, 1),
-              foregroundColor: Colors.black,
-            ),
-            child: const Text(
-              'Ongoing Events',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          )
+          
           ],
         ),
       ),

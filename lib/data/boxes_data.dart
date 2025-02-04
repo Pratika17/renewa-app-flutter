@@ -8,5 +8,5 @@ final List<BoxModel> boxes = [
   BoxModel(title: 'ECO\nHARVEST', imagePath: 'assets/images/eco_harvest.png', inde: 2),
   BoxModel(title: 'CLEAN\nCOMMUTE', imagePath: 'assets/images/clean_commute.png',inde: 3),
   BoxModel(title: 'ENVIRO\nSHOTS', imagePath: 'assets/images/enviro_shots.png',inde: 4),
-  BoxModel(title: 'ENVIRONMENT\nMATTERS', imagePath: 'assets/images/mangrove_matters.png',inde: 5),
+  BoxModel(title: 'RENEW\nRISE', imagePath: 'assets/images/mangrove_matters.png',inde: 5),
 ];

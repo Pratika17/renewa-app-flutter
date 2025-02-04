@@ -118,7 +118,7 @@ class _RecyclingScreenState extends State<RecyclingScreen> {
             const SizedBox(height: 8),
             const Center(
               child: Text(
-                'Turn your recyclables to rewards and join\n the green revolution today! Click to get \nstarted',
+                'Turn the trashes into rewards and join\n the green revolution today! Click to get \nstarted',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14),
               ),

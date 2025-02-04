@@ -34,7 +34,7 @@ class EcoHarvestScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'Farming is leading the charge in promoting sustainable agriculture. Through incentivizing and advocating eco-friendly practices like terrace farming, cover cropping, livestock grazing, and drip irrigation, we\'re transforming the agricultural landscape. Participants are rewarded for capturing and sharing snapshots of their sustainable farming activities, amplifying awareness and spreading the word about the benefits of sustainable agriculture. Join us in this revolutionary initiative and be part of the solution for a greener future!',
+                    'Farming is leading the charge in promoting sustainable agriculture. Through incentivizing and advocating eco-friendly practices like terrace farming and cover cropping, we\'re transforming the agricultural landscape. Participants are rewarded for capturing and sharing snapshots of their sustainable farming activities, amplifying awareness and spreading the word about the benefits of sustainable agriculture. Join us in this revolutionary initiative and be part of the solution for a greener future!',
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),

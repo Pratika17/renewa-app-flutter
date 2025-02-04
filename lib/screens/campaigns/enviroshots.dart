@@ -34,7 +34,7 @@ class EnviroshotsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'Introduces a novel concept to incentivize environmentally-conscious actions by rewarding individuals for participating in sustainable practices. By simply capturing and uploading pictures of eco-friendly actions, such as recycling waste, utilizing solar products, or choosing Eco-Mark certified items, participants not only contribute to a greener planet but also earn rewards for their efforts.',
+                    'Introduces a novel concept to incentivize environmentally-conscious actions by rewarding individuals for taking a picture of trash and tagging its location. By simply capturing and uploading pictures of of trash and tagging location, participants not only contribute to a greener planet but also earn rewards for their efforts.',
                     style: TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),
