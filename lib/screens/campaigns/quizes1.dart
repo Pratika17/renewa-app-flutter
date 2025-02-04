@@ -1,12 +1,17 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:renewa/screens/thank_you.dart';
 
 class QuizScreen extends StatefulWidget {
-  const QuizScreen({super.key, required this.questions, required this.options, required this.campaignTitle, required this.questTitle});
+  const QuizScreen(
+      {super.key,
+      required this.questions,
+      required this.options,
+      required this.campaignTitle,
+      required this.questTitle});
 
-  final List<String> questions;
-  final List<List<String>> options;
+  final List<Map<String, dynamic>> questions; // Changed type here
+  final List<List<String>> options; // Keep this as List<List<String>> for now, we'll adapt in build
   final String campaignTitle;
   final String questTitle;
 
@@ -56,7 +61,8 @@ class _QuizScreenState extends State<QuizScreen> {
         isSubmitted = true;
       });
 
-      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const ThankYouScreen()));
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (ctx) => const ThankYouScreen()));
     } catch (e) {
       print(e);
     } finally {
@@ -87,7 +93,8 @@ class _QuizScreenState extends State<QuizScreen> {
                   return Column(
                     children: [
                       CheckboxListTile(
-                        title: const Text('Your submission will be final and cannot be modified or withdrawn later. Please review your inputs carefully.'),
+                        title: const Text(
+                            'Your submission will be final and cannot be modified or withdrawn later. Please review your inputs carefully.'),
                         value: isFinalCheck,
                         onChanged: (bool? value) {
                           setState(() {
@@ -100,27 +107,42 @@ class _QuizScreenState extends State<QuizScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ElevatedButton(
-                          onPressed: isFinalCheck && !isSubmitting ? handleSubmit : null,
+                          onPressed:
+                              isFinalCheck && !isSubmitting ? handleSubmit : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromRGBO(30, 105, 92, 1),
+                            backgroundColor:
+                                const Color.fromRGBO(30, 105, 92, 1),
                             foregroundColor: Colors.white,
                           ),
-                          child: isSubmitting ? const CircularProgressIndicator(color: Colors.white) : const Text('Submit'),
+                          child: isSubmitting
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : const Text('Submit'),
                         ),
                       ),
                     ],
                   );
                 }
 
+                // Access question text from Map
+                String questionText = widget.questions[index]['text'];
+
+                // Extract options text to List<String> for CheckboxListTile
+                List<String> currentOptions = (widget.questions[index]['options'] as List<dynamic>)
+                    .map((optionMap) => optionMap['text'] as String)
+                    .toList();
+
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.questions[index],
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      questionText, // Use questionText here
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    ...widget.options[index].asMap().entries.map((entry) {
+                    ...currentOptions.asMap().entries.map((entry) { // Use currentOptions here
                       int optIndex = entry.key;
                       String option = entry.value;
                       return Column(
@@ -141,7 +163,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               });
                             },
                           ),
-                          if (optIndex == widget.options[index].length - 1)
+                          if (optIndex == currentOptions.length - 1) // Use currentOptions.length here
                             const Divider(
                               color: Colors.black,
                               thickness: 1,

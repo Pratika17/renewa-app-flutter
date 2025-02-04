@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:renewa/models/campaign_model.dart';
+import 'package:flutter/material.dart';
 import 'package:renewa/data/campaigns_data.dart';
+import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaigns/ccquest.dart';
 
 class CoverCroppingScreen extends StatefulWidget {
-  CoverCroppingScreen({super.key});
+  const CoverCroppingScreen({super.key});
 
   @override
   _CoverCroppingScreenState createState() => _CoverCroppingScreenState();
@@ -16,84 +15,40 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
   late Future<Map<String, dynamic>> _campaign1DetailsFuture;
   late Future<Map<String, dynamic>> _campaign2DetailsFuture;
   late Future<Map<String, dynamic>> _campaign3DetailsFuture;
-
-  final List<String> questions1 = [
-    'What is cover cropping and its purpose?',
-    'What are the benefits of cover cropping?',
-    'What are common cover crop species?',
-  ];
-
-  final List<List<String>> options1 = [
-    [
-      'a. Cover cropping involves planting crops to cover and protect soil.',
-      'b. Cover cropping involves planting crops for immediate harvest.',
-      'c. Cover cropping involves planting trees to provide shade.',
-      'd. Cover cropping involves planting flowers to attract bees.'
-    ],
-    [
-      'a. Increases soil fertility and organic matter.',
-      'b. Reduces erosion and improves soil structure.',
-      'c. Provides habitat for pests and diseases.',
-      'd. Decreases water retention.'
-    ],
-    [
-      'a. Legumes (e.g., clover, vetch)',
-      'b. Grasses (e.g., rye, oats)',
-      'c. Brassicas (e.g., radish, mustard)',
-      'd. Citrus (e.g., orange, lemon)'
-    ]
-  ];
-
-  final List<String> questions2 = [
-    'How does cover cropping improve soil health?',
-    'What role do legumes play in cover cropping?',
-    'Which cover crop is known for improving soil aeration?',
-  ];
-
-  final List<List<String>> options2 = [
-    [
-      'a. By providing shade to the soil.',
-      'b. By adding organic matter and nutrients to the soil.',
-      'c. By attracting pollinators.',
-      'd. By increasing soil temperature.'
-    ],
-    [
-      'a. They provide shade for other crops.',
-      'b. They fix nitrogen from the atmosphere into the soil.',
-      'c. They repel pests.',
-      'd. They increase soil acidity.'
-    ],
-    ['a. Clover', 'b. Rye', 'c. Radish', 'd. Mustard']
-  ];
-
-  final List<String> questions3 = [
-    'What is green manure?',
-    'Why is water retention important in cover cropping?',
-    'Which cover crop helps in weed suppression?',
-  ];
-
-  final List<List<String>> options3 = [
-    [
-      'a. Crops grown for food production.',
-      'b. Crops grown to cover soil and later turned into the soil to improve its quality.',
-      'c. Crops grown for ornamental purposes.',
-      'd. Crops grown for wood production.'
-    ],
-    [
-      'a. It increases crop yield.',
-      'b. It reduces the need for chemical fertilizers.',
-      'c. It helps maintain soil moisture and supports plant growth during dry periods.',
-      'd. It prevents soil erosion.'
-    ],
-    ['a. Vetch', 'b. Oats', 'c. Mustard', 'd. Radish']
-  ];
+  late Future<List<Map<String, dynamic>>> _quizzesFuture;
 
   @override
   void initState() {
     super.initState();
+    _quizzesFuture = _fetchQuizzes();
     _campaign1DetailsFuture = _fetchCampaignDetails("Cover Cropping");
     _campaign2DetailsFuture = _fetchCampaignDetails("Discovering");
     _campaign3DetailsFuture = _fetchCampaignDetails("Cover Cropping");
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchQuizzes() async {
+    List<Map<String, dynamic>> quizzesData = [];
+    final quizzesQuery =
+        await FirebaseFirestore.instance.collection('Quizzes').get();
+
+    for (final quizDoc in quizzesQuery.docs) {
+      final questionsQuery =
+          await quizDoc.reference.collection('questions').get();
+
+      List<Map<String, dynamic>> questions = [];
+      for (final questionDoc in questionsQuery.docs) {
+        final optionsQuery =
+            await questionDoc.reference.collection('options').get();
+        List<Map<String, dynamic>> options = [];
+
+        for (final optionDoc in optionsQuery.docs) {
+          options.add(optionDoc.data());
+        }
+        questions.add({...questionDoc.data(), 'options': options});
+      }
+      quizzesData.add({...quizDoc.data(), 'questions': questions});
+    }
+    return quizzesData;
   }
 
   Future<Map<String, dynamic>> _fetchCampaignDetails(String campaignId) async {
@@ -227,42 +182,58 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8.0),
-            FutureBuilder<Map<String, dynamic>>(
-              future: _campaign1DetailsFuture,
-              builder: (context, snapshot) {
-                return _buildCampaignDetails(
-                  context,
-                  snapshot,
-                  campaigns[4],
-                  questions1,
-                  options1,
-                );
-              },
-            ),
-            const SizedBox(height: 16.0),
-            FutureBuilder<Map<String, dynamic>>(
-              future: _campaign2DetailsFuture,
-              builder: (context, snapshot) {
-                return _buildCampaignDetails(
-                  context,
-                  snapshot,
-                  campaigns[5],
-                  questions2,
-                  options2,
-                );
-              },
-            ),
-            const SizedBox(height: 16.0),
-            FutureBuilder<Map<String, dynamic>>(
-              future: _campaign3DetailsFuture,
-              builder: (context, snapshot) {
-                return _buildCampaignDetails(
-                  context,
-                  snapshot,
-                  campaigns[6],
-                  questions3,
-                  options3,
-                );
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _quizzesFuture,
+              builder: (context, quizSnapshot) {
+                if (quizSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (quizSnapshot.hasError) {
+                  return const Text('Error fetching quiz details');
+                } else if (!quizSnapshot.hasData) {
+                  return const Text('No quizzes found');
+                } else {
+                  final quizzes = quizSnapshot.data!;
+
+                  return Column(
+                    children: [
+                      FutureBuilder<Map<String, dynamic>>(
+                        future: _campaign1DetailsFuture,
+                        builder: (context, snapshot) {
+                          return _buildCampaignDetails(
+                            context,
+                            snapshot,
+                            campaigns[4],
+                            quizzes[0]['questions'],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+                      FutureBuilder<Map<String, dynamic>>(
+                        future: _campaign2DetailsFuture,
+                        builder: (context, snapshot) {
+                          return _buildCampaignDetails(
+                            context,
+                            snapshot,
+                            campaigns[5],
+                            quizzes[1]['questions'],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16.0),
+                      FutureBuilder<Map<String, dynamic>>(
+                        future: _campaign3DetailsFuture,
+                        builder: (context, snapshot) {
+                          return _buildCampaignDetails(
+                            context,
+                            snapshot,
+                            campaigns[6],
+                            quizzes[2]['questions'],
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                }
               },
             ),
           ],
@@ -312,13 +283,11 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
       ),
     );
   }
-
   Widget _buildCampaignDetails(
       BuildContext context,
       AsyncSnapshot<Map<String, dynamic>> snapshot,
       Campaign campaign,
-      List<String> questions,
-      List<List<String>> options) {
+      List<Map<String, dynamic>> questions) { // questions is already List<Map<String,dynamic>>
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(child: CircularProgressIndicator());
     } else if (snapshot.hasError) {
@@ -333,6 +302,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
     final credits = details['credits'];
     final startDate = details['startDate'];
     final endDate = details['endDate'];
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(35.0),
       child: Container(
@@ -340,8 +310,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
           border: Border.all(
             color: const Color.fromARGB(255, 0, 0, 0),
           ),
-          borderRadius:
-              BorderRadius.circular(35.0), // Apply border radius here as well
+          borderRadius: BorderRadius.circular(35.0),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -358,7 +327,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
                     ),
                   ),
                   const Spacer(),
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                         backgroundColor: getCampaignStatusColor(
@@ -367,7 +336,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
                           endDate,
                         ),
                         foregroundColor: Colors.black),
-                    child: Text(
+                    label: Text(
                       campaignStatus.contains('Ongoing')
                           ? 'Ongoing'
                           : campaignStatus.contains('Upcoming')
@@ -419,8 +388,12 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
                         MaterialPageRoute(
                           builder: (context) => CoverCropQuestScreen(
                             campaign: campaign,
-                            questions: questions,
-                            options: options,
+                            questions: questions, // Pass questions directly - it's already List<Map<String, dynamic>>
+                            options: questions
+                                .map<List<String>>((q) => (q['options'] as List<dynamic>)
+                                    .map((o) => o['text'] as String)
+                                    .toList())
+                                .toList(),
                             collectionName: campaign.collectionName!,
                           ),
                         ),

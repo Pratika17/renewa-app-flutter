@@ -16,7 +16,7 @@ class CoverCropQuestScreen extends StatefulWidget {
   });
 
   final Campaign campaign;
-  final List<String> questions;
+  final List<Map<String, dynamic>> questions; // Changed to List<Map<String, dynamic>>
   final List<List<String>> options;
   final String collectionName;
 
@@ -57,7 +57,7 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
   Future<void> fetchCampaignDetails() async {
     final campaignQuery = await FirebaseFirestore.instance
         .collection('Campaigns')
-        .where('name', isEqualTo: widget.campaign.quest[0])
+        .where('name', isEqualTo: widget.campaign.title)
         .get();
 
     if (campaignQuery.docs.isNotEmpty) {
@@ -114,6 +114,7 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     String campaignStatus = getCampaignStatus();
@@ -153,9 +154,9 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                             : () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => QuizScreen(
-                                    questions: widget.questions,
-                                    options: widget.options,
-                                    campaignTitle: widget.campaign.title,
+                                    questions:widget.questions, // Extract question text
+                                    options: widget.questions.map((q) => (q['options'] as List<dynamic>).map((o) => o['text'] as String).toList()).toList(), // Extract options text
+                                     campaignTitle: widget.campaign.title,
                                     questTitle: widget.campaign.quest[0],
                                   ),
                                 ));
