@@ -69,7 +69,7 @@ class _PassUploadScreenState extends State<PassUploadScreen> {
       await storageRef.putFile(_selectedImage!);
       final imageUrl = await storageRef.getDownloadURL();
 
-      await FirebaseFirestore.instance.collection('Clean Commute').doc(user.uid).set({
+      await FirebaseFirestore.instance.collection('CCSubmissions').doc(user.uid).set({
         'name': widget.name,
         'ticketNo': widget.ticketNo,
         'busStop': widget.busStop,
@@ -79,6 +79,9 @@ class _PassUploadScreenState extends State<PassUploadScreen> {
         'address': widget.address,
         'imageUrl': imageUrl,
         'imagePath': _selectedImage!.path,
+        'status': 'pending',
+        'user_email': user.email,
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const ThankYouScreen()));

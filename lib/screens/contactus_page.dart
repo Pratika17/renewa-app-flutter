@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ContactUsScreen extends StatefulWidget {
-  const ContactUsScreen({Key? key}) : super(key: key);
+  const ContactUsScreen({super.key});
 
   @override
   State<ContactUsScreen> createState() => _ContactUsScreenState();

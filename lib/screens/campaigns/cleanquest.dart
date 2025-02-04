@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/models/campaign_model.dart';
 import 'package:renewa/screens/campaign_upload.dart';
+import 'package:renewa/screens/campaigns/passdetails.dart';
 
 class CleanQuestScreen extends StatefulWidget {
   const CleanQuestScreen({super.key, required this.campaign});
@@ -141,8 +142,8 @@ class _CleanQuestScreenState extends State<CleanQuestScreen> {
                             ? joinQuest
                             : () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => CampaignUploadScreen(
-                                      campaign: widget.campaign),
+                                  builder: (context) =>const  PassDetailsScreen(
+                                      ),
                                 ));
                               },
                     icon: isJoining

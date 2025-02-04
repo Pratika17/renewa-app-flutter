@@ -36,7 +36,7 @@ class _PassDetailsScreenState extends State<PassDetailsScreen> {
     }
 
     final userSnapshot = await FirebaseFirestore.instance
-        .collection('Clean Commute')
+        .collection('CCSubmissions')
         .doc(user.uid)
         .get();
 

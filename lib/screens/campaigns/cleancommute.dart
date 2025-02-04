@@ -306,8 +306,6 @@ class _CleanCommuteScreenState extends State<CleanCommuteScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Text('Region - ${widget.campaign.region}'),
-              const SizedBox(height: 8),
               const Text(
                   'Unlock rewards with every journey! Travel passes that lead to exciting perks await.'),
               const SizedBox(height: 8),
