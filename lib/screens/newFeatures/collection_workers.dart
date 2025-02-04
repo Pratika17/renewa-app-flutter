@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:renewa/models/campaign_model.dart';
-import 'package:renewa/screens/newFeatures/citizen_credit.dart';
 import 'package:renewa/screens/newFeatures/collection_achievements.dart';
 import 'package:renewa/screens/newFeatures/collection_request.dart';
 import 'package:renewa/screens/newFeatures/dealers_location_1.dart';

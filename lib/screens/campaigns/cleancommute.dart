@@ -17,8 +17,7 @@ class CleanCommuteScreen extends StatefulWidget {
 
 class _CleanCommuteScreenState extends State<CleanCommuteScreen> {
   late Future<Map<String, dynamic>> _campaignDetailsFuture;
-    late Future<String?> _userSubscriptionFuture;
-
+  late Future<String?> _userSubscriptionFuture;
 
   @override
   void initState() {
@@ -53,13 +52,13 @@ class _CleanCommuteScreenState extends State<CleanCommuteScreen> {
         .get();
     DateTime? startDate;
     DateTime? endDate;
-     String eligibility = '';
+    String eligibility = '';
     if (timeQuery.docs.isNotEmpty) {
       final doc = timeQuery.docs.first;
       startDate = (doc['start_date'] as Timestamp).toDate();
 
       endDate = (doc['end_date'] as Timestamp).toDate();
-           eligibility = doc['eligibility'] as String;
+      eligibility = doc['eligibility'] as String;
     }
     startDate ??= DateTime.now();
     endDate ??= DateTime.now();
@@ -100,7 +99,7 @@ class _CleanCommuteScreenState extends State<CleanCommuteScreen> {
       'credits': credits,
       'startDate': startDate,
       'endDate': endDate,
-        'eligibility' : eligibility
+      'eligibility': eligibility
     };
   }
 
@@ -130,7 +129,7 @@ class _CleanCommuteScreenState extends State<CleanCommuteScreen> {
           widget.campaign.title,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-          actions: [
+        actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -185,51 +184,58 @@ class _CleanCommuteScreenState extends State<CleanCommuteScreen> {
               ),
             ),
             const SizedBox(height: 16),
-             FutureBuilder<String?>(
+            FutureBuilder<String?>(
                 future: _userSubscriptionFuture,
-                 builder: (context, userSnapshot) {
-                 if(userSnapshot.connectionState == ConnectionState.waiting){
-                       return const Center(child: CircularProgressIndicator());
-                 } else if (userSnapshot.hasError) {
-                        return const Text('Error fetching user details');
-                    }else if (!userSnapshot.hasData || userSnapshot.data == null) {
-                         return const Text('No user details');
-                    }else {
-                        final userSubscription = userSnapshot.data!;
-                         return FutureBuilder<Map<String, dynamic>>(
-                            future: _campaignDetailsFuture,
-                            builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                            } else if (snapshot.hasError) {
-                             return const Text('Error fetching campaign details');
-                            } else if (snapshot.hasData) {
-                                final details = snapshot.data!;
-                                final campaignStatus = details['status'];
-                                final participants = details['participants'];
-                                final credits = details['credits'];
-                                final startDate = details['startDate'];
-                                final endDate = details['endDate'];
-                                final eligibility = details['eligibility'];
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (userSnapshot.hasError) {
+                    return const Text('Error fetching user details');
+                  } else if (!userSnapshot.hasData ||
+                      userSnapshot.data == null) {
+                    return const Text('No user details');
+                  } else {
+                    final userSubscription = userSnapshot.data!;
+                    return FutureBuilder<Map<String, dynamic>>(
+                      future: _campaignDetailsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return const Text('Error fetching campaign details');
+                        } else if (snapshot.hasData) {
+                          final details = snapshot.data!;
+                          final campaignStatus = details['status'];
+                          final participants = details['participants'];
+                          final credits = details['credits'];
+                          final startDate = details['startDate'];
+                          final endDate = details['endDate'];
+                          final eligibility = details['eligibility'];
 
-
-                                 if (userSubscription == eligibility || eligibility == 'free' ) {
-                                    return _buildCampaignDetails(context, campaignStatus,
-                                        participants, credits, startDate, endDate);
-                                  }else{
-                                        return const Text(
-                                              'This campaign is not available for your subscription type.',
-                                              style: TextStyle(fontSize: 16),
-                                          );
-                                       }
-                              } else {
-                                return const Text('No details found');
-                              }
-                            },
-                          );
-                    }
-                }
-              ),
+                          if (userSubscription == eligibility ||
+                              eligibility == 'free') {
+                            return _buildCampaignDetails(
+                                context,
+                                campaignStatus,
+                                participants,
+                                credits,
+                                startDate,
+                                endDate);
+                          } else {
+                            return const Text(
+                              'This campaign is not available for your subscription type.',
+                              style: TextStyle(fontSize: 16),
+                            );
+                          }
+                        } else {
+                          return const Text('No details found');
+                        }
+                      },
+                    );
+                  }
+                }),
           ],
         ),
       ),

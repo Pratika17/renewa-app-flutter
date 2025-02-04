@@ -10,14 +10,14 @@ class CoverCropQuestScreen extends StatefulWidget {
   const CoverCropQuestScreen({
     super.key,
     required this.campaign,
-    required this.questions,
-    required this.options,
+    /*required this.questions,
+    required this.options,*/
     required this.collectionName,
   });
 
   final Campaign campaign;
-  final List<Map<String, dynamic>> questions; // Changed to List<Map<String, dynamic>>
-  final List<List<String>> options;
+  /*final List<Map<String, dynamic>> questions; // Removed
+  final List<List<String>> options; // Removed*/
   final String collectionName;
 
   @override
@@ -57,7 +57,7 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
   Future<void> fetchCampaignDetails() async {
     final campaignQuery = await FirebaseFirestore.instance
         .collection('Campaigns')
-        .where('name', isEqualTo: widget.campaign.title)
+        .where('name', isEqualTo: widget.campaign.quest[0])
         .get();
 
     if (campaignQuery.docs.isNotEmpty) {
@@ -89,6 +89,33 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
       int hours = remainingTime.inHours.remainder(24);
       int minutes = remainingTime.inMinutes.remainder(60);
       return 'Ongoing - Ends in ${days}d ${hours}h ${minutes}m';
+    }
+  }
+  Future<Map<String, dynamic>> _fetchQuizzes(String questTitle) async {
+    final quizzesQuery = await FirebaseFirestore.instance
+        .collection('Quizzes')
+        .where('name', isEqualTo: questTitle)
+        .get();
+
+    if (quizzesQuery.docs.isNotEmpty) {
+      final quizDoc = quizzesQuery.docs.first;
+      final questionsQuery =
+          await quizDoc.reference.collection('questions').get();
+
+      List<Map<String, dynamic>> questions = [];
+      for (final questionDoc in questionsQuery.docs) {
+        final optionsQuery =
+            await questionDoc.reference.collection('options').get();
+        List<Map<String, dynamic>> options = [];
+
+        for (final optionDoc in optionsQuery.docs) {
+          options.add(optionDoc.data());
+        }
+        questions.add({...questionDoc.data(), 'options': options});
+      }
+      return {...quizDoc.data(), 'questions': questions};
+    } else {
+      return {};
     }
   }
 
@@ -152,15 +179,49 @@ class _CoverCropQuestScreenState extends State<CoverCropQuestScreen> {
                         : isCampaignOngoing
                             ? joinQuest
                             : () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => QuizScreen(
-                                    questions:widget.questions, // Extract question text
-                                    options: widget.questions.map((q) => (q['options'] as List<dynamic>).map((o) => o['text'] as String).toList()).toList(), // Extract options text
-                                     campaignTitle: widget.campaign.title,
-                                    questTitle: widget.campaign.quest[0],
-                                  ),
-                                ));
-                              },
+                                //Navigator.of(context).push(MaterialPageRoute(
+                                  //builder: (context) => QuizScreen(),
+                                //));
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => FutureBuilder<
+                                          Map<String, dynamic>>(
+                                        future: _fetchQuizzes(
+                                            widget.campaign.quest[0]),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const Center(
+                                                child:
+                                                    CircularProgressIndicator());
+                                          } else if (snapshot.hasError) {
+                                            return Text(
+                                                'Error fetching quiz details');
+                                          } else if (!snapshot.hasData ||
+                                              snapshot.data!.isEmpty) {
+                                            return const Text(
+                                                'No quizzes found');
+                                          } else {
+                                            final quizData = snapshot.data!;
+                                            final questions = quizData[
+                                                'questions'] as List<dynamic>;
+                                            final options = questions
+                                                .map((q) =>
+                                                    (q['options'] as List<dynamic>)
+                                                        .map((o) =>
+                                                            o['text'] as String)
+                                                        .toList())
+                                                .toList();
+                                            return QuizScreen(
+                                              questTitle: widget.campaign
+                                                  .quest[0], // Use questTitle
+                                              campaignTitle: widget.campaign.title,
+                                              questions: List<Map<String, dynamic>>.from(questions),
+                                              options: options,
+                                            );
+                                          }
+                                        },
+                                      )));
+                                },
                     icon: isJoining
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Icon(Icons.arrow_forward),

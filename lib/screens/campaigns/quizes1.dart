@@ -1,81 +1,42 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:renewa/screens/thank_you.dart';
 
 class QuizScreen extends StatefulWidget {
-  const QuizScreen(
-      {super.key,
-      required this.questions,
-      required this.options,
-      required this.campaignTitle,
-      required this.questTitle});
-
-  final List<Map<String, dynamic>> questions; // Changed type here
-  final List<List<String>> options; // Keep this as List<List<String>> for now, we'll adapt in build
+  final String questTitle; // Changed to questTitle
   final String campaignTitle;
-  final String questTitle;
+  final List<Map<String, dynamic>> questions;
+  final List<List<String>> options;
+
+  const QuizScreen({
+    super.key,
+    required this.questTitle,
+    required this.campaignTitle,
+    required this.questions,
+    required this.options,
+  });
 
   @override
-  State<QuizScreen> createState() {
-    return _QuizScreenState();
-  }
+  State<QuizScreen> createState() => _QuizScreenState();
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  Map<int, Set<int>> selectedAnswers = {};
-  bool isSubmitting = false;
-  bool isSubmitted = false;
-  bool isFinalCheck = false;
+  int _questionIndex = 0;
+  int _score = 0;
+  String? _selectedAnswer;
+  List<String?> _userAnswers = [];
 
   @override
   void initState() {
     super.initState();
-    checkSubmissionStatus();
-  }
-
-  Future<void> checkSubmissionStatus() async {
-    final docSnapshot = await FirebaseFirestore.instance
-        .collection(widget.campaignTitle)
-        .doc(widget.questTitle)
-        .get();
-
-    setState(() {
-      isSubmitted = docSnapshot.exists;
-    });
-  }
-
-  Future<void> handleSubmit() async {
-    setState(() {
-      isSubmitting = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance
-          .collection(widget.campaignTitle)
-          .doc(widget.questTitle)
-          .set({
-        'answers': selectedAnswers.map((key, value) => MapEntry(key.toString(), value.toList())),
-      });
-
-      setState(() {
-        isSubmitted = true;
-      });
-
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (ctx) => const ThankYouScreen()));
-    } catch (e) {
-      print(e);
-    } finally {
-      setState(() {
-        isSubmitting = false;
-      });
-    }
+    _userAnswers = List<String?>.filled(widget.questions.length, null);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text('Quiz: ${widget.questTitle}'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -83,100 +44,145 @@ class _QuizScreenState extends State<QuizScreen> {
           },
         ),
       ),
-      body: isSubmitted
-          ? const Center(child: Text('You have already submitted your answers.'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: widget.questions.length + 1,
-              itemBuilder: (context, index) {
-                if (index == widget.questions.length) {
-                  return Column(
-                    children: [
-                      CheckboxListTile(
-                        title: const Text(
-                            'Your submission will be final and cannot be modified or withdrawn later. Please review your inputs carefully.'),
-                        value: isFinalCheck,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isFinalCheck = value ?? false;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ElevatedButton(
-                          onPressed:
-                              isFinalCheck && !isSubmitting ? handleSubmit : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromRGBO(30, 105, 92, 1),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: isSubmitting
-                              ? const CircularProgressIndicator(
-                                  color: Colors.white)
-                              : const Text('Submit'),
-                        ),
-                      ),
-                    ],
-                  );
-                }
-
-                // Access question text from Map
-                String questionText = widget.questions[index]['text'];
-
-                // Extract options text to List<String> for CheckboxListTile
-                List<String> currentOptions = (widget.questions[index]['options'] as List<dynamic>)
-                    .map((optionMap) => optionMap['text'] as String)
-                    .toList();
-
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      questionText, // Use questionText here
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    ...currentOptions.asMap().entries.map((entry) { // Use currentOptions here
-                      int optIndex = entry.key;
-                      String option = entry.value;
-                      return Column(
-                        children: [
-                          CheckboxListTile(
-                            title: Text(option),
-                            value: selectedAnswers[index]?.contains(optIndex) ?? false,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                if (value == true) {
-                                  if (selectedAnswers[index] == null) {
-                                    selectedAnswers[index] = {};
-                                  }
-                                  selectedAnswers[index]?.add(optIndex);
-                                } else {
-                                  selectedAnswers[index]?.remove(optIndex);
-                                }
-                              });
-                            },
-                          ),
-                          if (optIndex == currentOptions.length - 1) // Use currentOptions.length here
-                            const Divider(
-                              color: Colors.black,
-                              thickness: 1,
-                              height: 20,
-                            ),
-                        ],
-                      );
-                    }),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Question ${_questionIndex + 1} of ${widget.questions.length}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 16),
+            Text(
+              widget.questions[_questionIndex]['text'],
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(
+              widget.options[_questionIndex].length,
+              (index) => RadioListTile(
+                title: Text(widget.options[_questionIndex][index]),
+                value: widget.options[_questionIndex][index],
+                groupValue: _selectedAnswer,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedAnswer = value;
+                    _userAnswers[_questionIndex] = value; // Store user's answer
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: _selectedAnswer == null
+                  ? null
+                  : () {
+                      setState(() {
+                        _selectedAnswer = null;
+                      });
+
+                      // Move to the next question or show the result
+                      if (_questionIndex < widget.questions.length - 1) {
+                        setState(() {
+                          _questionIndex++;
+                        });
+                      } else {
+                        _submitQuiz(); // Call submit quiz function
+                      }
+                    },
+              child: Text(_questionIndex < widget.questions.length - 1
+                  ? 'Next Question'
+                  : 'Submit Quiz'),
+            ),
+          ],
+        ),
+      ),
     );
   }
+
+  Future<void> _submitQuiz() async {
+  int tempScore = 0; // Local score to calculate before updating state
+
+  // Calculate the score and add submission to Firestore
+  for (int i = 0; i < widget.questions.length; i++) {
+    // Get the correct answer ID from the question
+    final String correctAnswerId = widget.questions[i]['correctAnswer'];
+
+    // Find the correct option text that corresponds to the correct answer ID
+    try {
+      final correctOption = widget.questions[i]['options'].firstWhere(
+          (option) => option['text'] == _userAnswers[i]);
+
+      if (_userAnswers[i] == correctOption['text']) {
+        tempScore++;
+      }
+    } catch (e) {
+      // Handle the case where no matching option is found (or other errors)
+      print('Error finding correct option: $e');
+      // You might want to log this or take other actions.
+      // It could mean your data in Firestore is inconsistent.
+    }
+  }
+
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Fetch user data from 'Users' collection
+      final userQuery = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('user_email', isEqualTo: user.email)
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        final userData = userQuery.docs.first.data();
+        final userName = userData['user_name'];
+        String questName = widget.questTitle; // Use widget.questTitle directly
+        // Add submission to 'QSubmissions' collection
+        await FirebaseFirestore.instance.collection('QSubmissions').add({
+          'user_name': userName,
+          'user_email': user.email,
+          'created_at': FieldValue.serverTimestamp(),
+          'quest_name': questName,
+          'status': 'pending',
+          'answers': _userAnswers,
+          'score': tempScore, // Store the score
+          'campaignTitle': widget.campaignTitle,
+        });
+
+        // Show the result
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Quiz Result'),
+              content: Text(
+                  'You scored $tempScore out of ${widget.questions.length}'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).pop(); // Go back to the previous screen
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        // Handle the case where user data is not found
+        print('User data not found in "Users" collection');
+      }
+    }
+  } catch (e) {
+    print('Error submitting quiz: $e');
+    // Handle errors
+  }
+}
 }

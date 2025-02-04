@@ -203,7 +203,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
                             context,
                             snapshot,
                             campaigns[4],
-                            quizzes[0]['questions'],
+
                           );
                         },
                       ),
@@ -215,7 +215,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
                             context,
                             snapshot,
                             campaigns[5],
-                            quizzes[1]['questions'],
+
                           );
                         },
                       ),
@@ -227,7 +227,7 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
                             context,
                             snapshot,
                             campaigns[6],
-                            quizzes[2]['questions'],
+
                           );
                         },
                       ),
@@ -284,130 +284,130 @@ class _CoverCroppingScreenState extends State<CoverCroppingScreen> {
     );
   }
   Widget _buildCampaignDetails(
-      BuildContext context,
-      AsyncSnapshot<Map<String, dynamic>> snapshot,
-      Campaign campaign,
-      List<Map<String, dynamic>> questions) { // questions is already List<Map<String,dynamic>>
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (snapshot.hasError) {
-      return const Text('Error fetching campaign details');
-    } else if (!snapshot.hasData) {
-      return const Text('No details found');
-    }
+  BuildContext context,
+  AsyncSnapshot<Map<String, dynamic>> snapshot,
+  Campaign campaign,
+) {
+  if (snapshot.connectionState == ConnectionState.waiting) {
+    return const Center(child: CircularProgressIndicator());
+  } else if (snapshot.hasError) {
+    return const Text('Error fetching campaign details');
+  } else if (!snapshot.hasData) {
+    return const Text('No details found');
+  }
 
-    final details = snapshot.data!;
-    final campaignStatus = details['status'];
-    final participants = details['participants'];
-    final credits = details['credits'];
-    final startDate = details['startDate'];
-    final endDate = details['endDate'];
+  final details = snapshot.data!;
+  final campaignStatus = details['status'];
+  final participants = details['participants'];
+  final credits = details['credits'];
+  final startDate = details['startDate'];
+  final endDate = details['endDate'];
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(35.0),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: const Color.fromARGB(255, 0, 0, 0),
-          ),
-          borderRadius: BorderRadius.circular(35.0),
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(35.0),
+    child: Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: const Color.fromARGB(255, 0, 0, 0),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    campaign.quest[0],
+        borderRadius: BorderRadius.circular(35.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  campaign.quest[0],
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: getCampaignStatusColor(
+                        campaignStatus,
+                        startDate,
+                        endDate,
+                      ),
+                      foregroundColor: Colors.black),
+                  label: Text(
+                    campaignStatus.contains('Ongoing')
+                        ? 'Ongoing'
+                        : campaignStatus.contains('Upcoming')
+                            ? 'Upcoming'
+                            : 'Past',
                     style: const TextStyle(
-                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: getCampaignStatusColor(
-                          campaignStatus,
-                          startDate,
-                          endDate,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.timer),
+                const SizedBox(width: 8),
+                Text(campaignStatus),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.credit_card),
+                const SizedBox(width: 8),
+                Text('$credits credits'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.group),
+                const SizedBox(width: 8),
+                Text('$participants participants'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const SizedBox(width: 2),
+                const Spacer(),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => CoverCropQuestScreen(
+                          campaign: campaign,
+                          //questions: questions, // Remove this line
+                          //options: questions    // Remove this line
+                          //  .map<List<String>>((q) => (q['options'] as List<dynamic>)
+                          //      .map((o) => o['text'] as String)
+                          //      .toList())
+                          //  .toList(),
+                          collectionName: campaign.collectionName!,
                         ),
-                        foregroundColor: Colors.black),
-                    label: Text(
-                      campaignStatus.contains('Ongoing')
-                          ? 'Ongoing'
-                          : campaignStatus.contains('Upcoming')
-                              ? 'Upcoming'
-                              : 'Past',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.timer),
-                  const SizedBox(width: 8),
-                  Text(campaignStatus),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.credit_card),
-                  const SizedBox(width: 8),
-                  Text('$credits credits'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.group),
-                  const SizedBox(width: 8),
-                  Text('$participants participants'),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const SizedBox(width: 2),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CoverCropQuestScreen(
-                            campaign: campaign,
-                            questions: questions, // Pass questions directly - it's already List<Map<String, dynamic>>
-                            options: questions
-                                .map<List<String>>((q) => (q['options'] as List<dynamic>)
-                                    .map((o) => o['text'] as String)
-                                    .toList())
-                                .toList(),
-                            collectionName: campaign.collectionName!,
-                          ),
-                        ),
-                      );
-                    },
-                    label: const Text('View Quest'),
-                    icon: const Icon(Icons.arrow_forward),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                    );
+                  },
+                  label: const Text('View Quest'),
+                  icon: const Icon(Icons.arrow_forward),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
