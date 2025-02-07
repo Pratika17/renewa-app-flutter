@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:renewa/providers.dart';
 import 'package:renewa/screens/green_campigns.dart';
+import 'package:renewa/screens/newFeatures/onboarding_screen.dart';
 import 'package:renewa/screens/register_page.dart';
 import 'package:renewa/screens/splash.dart';
 import 'firebase_options.dart';
@@ -20,27 +24,48 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: true);
+
+  
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends  ConsumerStatefulWidget {
   const MyApp({super.key});
 
+    @override
+  ConsumerState<MyApp> createState() {
+    return _MyAppState();
+  }
+}
+class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
+    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Renewa',
       theme: theme,
-      home: const AuthStateScreen(),
+      home: AuthStateScreen(),
     );
   }
 }
 
-class AuthStateScreen extends StatelessWidget {
-  const AuthStateScreen({super.key});
+class AuthStateScreen extends ConsumerStatefulWidget {
+  AuthStateScreen({super.key});
+  
+
+    @override
+  ConsumerState<AuthStateScreen> createState() {
+    return _AuthStateScreenState();
+  }
+}
+class _AuthStateScreenState extends ConsumerState<AuthStateScreen> {
+  
   @override
   Widget build(BuildContext context) {
+    final isOnboardingDone = ref.watch(onboardingProvider);
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
@@ -50,7 +75,7 @@ class AuthStateScreen extends StatelessWidget {
         if (snapshot.hasData) {
           return const GreenCampignsScreen();
         } 
-          return const RegistrationScreen();
+          return isOnboardingDone? const RegistrationScreen():const OnboardingPage1();
         
       },
     );
