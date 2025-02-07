@@ -117,6 +117,9 @@ flutter:
     - assets/images/onboarding1.jpeg
     - assets/images/onboarding2.jpg
     - assets/images/onboarding3.jpeg
+    - assets/images/onboarding4.jpeg
+    - assets/images/onboarding5.jpg
+    - assets/images/onboarding6.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

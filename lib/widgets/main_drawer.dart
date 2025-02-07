@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:renewa/providers.dart';
 import 'package:renewa/screens/newFeatures/credit_points.dart';
 import 'package:renewa/screens/newFeatures/premium_screen.dart';
 import 'package:renewa/screens/profile/profile.dart';
 import 'package:renewa/screens/newFeatures/donate_screen.dart'; // Import the donate screen
 
-class MainDrawer extends StatefulWidget {
+class MainDrawer extends ConsumerStatefulWidget {
   const MainDrawer({super.key});
 
   @override
-  State<MainDrawer> createState() => _MainDrawerState();
+  ConsumerState<MainDrawer> createState() => _MainDrawerState();
 }
 
-class _MainDrawerState extends State<MainDrawer> {
+class _MainDrawerState extends ConsumerState<MainDrawer> {
   final authenticatedUser = FirebaseAuth.instance.currentUser!;
   String? _subscriptionType;
   bool _isLoading = true;
@@ -66,6 +68,7 @@ class _MainDrawerState extends State<MainDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final isOnboardingDone = ref.watch(onboardingProvider);
     return Drawer(
       child: Column(
         children: [
@@ -247,6 +250,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   ),
             ),
             onTap: () {
+              ref.read(onboardingProvider.notifier).state = false;
               FirebaseAuth.instance.signOut();
             },
           ),

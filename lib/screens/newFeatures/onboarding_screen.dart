@@ -25,14 +25,35 @@ class OnboardingPage1 extends ConsumerWidget {
               description: 'Report trash as a citizen, collect trash as a collection worker, process trash as a dealer to earn rewards!',
               imageUrl:
                   'assets/images/onboarding2.jpg',
-              bgColor: const Color.fromARGB(255, 78, 194, 148),
+              bgColor: const Color.fromARGB(255, 80, 59, 19),
             ),
             OnboardingPageModel(
               title: 'AquaConserve',
               description:
                   'Save water by using water efficient products and earn rewards!',
               imageUrl: 'assets/images/onboarding3.jpeg',
-              bgColor: const Color.fromARGB(255, 0, 0, 0),
+              bgColor: const Color.fromARGB(255, 188, 176, 97),
+            ),
+            OnboardingPageModel(
+              title: 'CleanCommute',
+              description:
+                  'Use public transports to reduce emissions and earn rewards!',
+              imageUrl: 'assets/images/onboarding4.jpeg',
+              bgColor: const Color.fromARGB(255, 209, 60, 199),
+            ),
+            OnboardingPageModel(
+              title: 'EcoHarvest',
+              description:
+                  'Cultivate your own fruits and vegetables to eat healthy without the usage of chemicals and pesticides and earn rewards!',
+              imageUrl: 'assets/images/onboarding5.jpg',
+              bgColor: const Color.fromARGB(255, 44, 154, 184),
+            ),
+            OnboardingPageModel(
+              title: 'RenewRise',
+              description:
+                  'Attend offline events and workshops to learn about sustainable practices and earn rewards!',
+              imageUrl: 'assets/images/onboarding6.jpeg',
+              bgColor: const Color.fromARGB(255, 130, 30, 176),
             ),
           ],
           onFinish: () {
