@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1025951722135:android:1a1ae12c24adebe11c97d2",
+        "android_client_info": {
+          "package_name": "com.environment.renewa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4H-oakVXtvFEap6goKrWCcJI_zCkKDd4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1025951722135:android:7b56885b6f39d4901c97d2",
         "android_client_info": {
           "package_name": "com.example.renewa"

@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyC4H-oakVXtvFEap6goKrWCcJI_zCkKDd4',
-    appId: '1:1025951722135:android:7b56885b6f39d4901c97d2',
+    appId: '1:1025951722135:android:1a1ae12c24adebe11c97d2',
     messagingSenderId: '1025951722135',
     projectId: 'renewa-app',
     storageBucket: 'renewa-app.appspot.com',
