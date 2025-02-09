@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:renewa/screens/profile/bankaccdetails.dart';
 import 'package:renewa/screens/profile/changepass.dart';
+import 'package:renewa/screens/profile/delete_acc.dart';
 import 'package:renewa/screens/profile/editprofile.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -31,12 +32,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           .limit(1)
           .get();
 
-       if(userSnapshot.docs.isNotEmpty){
-         setState(() {
+      if (userSnapshot.docs.isNotEmpty) {
+        setState(() {
           _userImageUrl = userSnapshot.docs.first['imageUrl'];
-         });
-
-       }
+        });
+      }
     }
   }
 
@@ -59,19 +59,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             CircleAvatar(
-              radius: 55,
-               backgroundColor: Colors.grey.shade300,
-              backgroundImage:  _userImageUrl != null && _userImageUrl!.isNotEmpty ? NetworkImage(_userImageUrl!) : null,
-              child: _userImageUrl == null || _userImageUrl!.isEmpty ? Icon(
-                Icons.person,
-                size: 50,
-                color: Colors.grey.shade600,
-              ): null
-            ),
+                radius: 55,
+                backgroundColor: Colors.grey.shade300,
+                backgroundImage:
+                    _userImageUrl != null && _userImageUrl!.isNotEmpty
+                        ? NetworkImage(_userImageUrl!)
+                        : null,
+                child: _userImageUrl == null || _userImageUrl!.isEmpty
+                    ? Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Colors.grey.shade600,
+                      )
+                    : null),
             const SizedBox(height: 20),
-             const ProfileButton(text: 'Edit Profile', screen:EditProfileScreen()),
-            const ProfileButton(text: 'Bank Acc Details', screen: BankAccDetailsScreen()),
-            const ProfileButton(text: 'Change Password', screen: ChangePasswordScreen()),
+            const ProfileButton(
+                text: 'Edit Profile', screen: EditProfileScreen()),
+            const ProfileButton(
+                text: 'Bank Acc Details', screen: BankAccDetailsScreen()),
+            const ProfileButton(
+                text: 'Change Password', screen: ChangePasswordScreen()),
+                const DeleteAccountButton(
+                text: 'Delete Account', screen: DeleteAccountScreen()),
           ],
         ),
       ),
@@ -83,7 +92,6 @@ class ProfileButton extends StatelessWidget {
   const ProfileButton({super.key, required this.text, required this.screen});
   final String text;
   final Widget screen;
-
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +106,42 @@ class ProfileButton extends StatelessWidget {
               MaterialPageRoute(builder: (context) => screen),
             );
           },
-          
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color.fromRGBO(27, 142, 123, 1),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 7),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 21, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+}
+class DeleteAccountButton extends StatelessWidget {
+  const DeleteAccountButton({super.key, required this.text, required this.screen});
+  final String text;
+  final Widget screen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 4),
+      child: SizedBox(
+        width: 200,
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => screen),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color.fromARGB(255, 196, 28, 28),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 7),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),

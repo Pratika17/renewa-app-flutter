@@ -106,7 +106,7 @@ class _DealerRegistrationScreenState extends State<DealerRegistrationScreen> {
           'phone': _phoneController.text,
           'location': _pickedLocationAdd,
           'locations': {'latitude': latitude, 'longitude': longitude},
-          'email': userEmail,
+          'user_email': userEmail,
         });
       } else {
         await FirebaseFirestore.instance.collection('Dealers').add({
@@ -114,7 +114,7 @@ class _DealerRegistrationScreenState extends State<DealerRegistrationScreen> {
           'phone': _phoneController.text,
           'location': _pickedLocationAdd,
           'locations': {'latitude': latitude, 'longitude': longitude},
-          'email': userEmail,
+          'user_email': userEmail,
         });
       }
 

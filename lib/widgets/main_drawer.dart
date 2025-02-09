@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:renewa/providers.dart';
 import 'package:renewa/screens/newFeatures/credit_points.dart';
 import 'package:renewa/screens/newFeatures/premium_screen.dart';
+import 'package:renewa/screens/newFeatures/privacy_policy.dart';
+import 'package:renewa/screens/newFeatures/refund_policy.dart';
 import 'package:renewa/screens/profile/profile.dart';
 import 'package:renewa/screens/newFeatures/donate_screen.dart'; // Import the donate screen
 
@@ -233,6 +235,44 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (ctx) => const DonateScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.policy_rounded,
+              size: 26,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+            title: Text(
+              'Refund Policy',
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                    color: Theme.of(context).colorScheme.onBackground,
+                    fontSize: 24,
+                  ),
+            ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => const RefundPolicyScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(
+              Icons.privacy_tip_outlined,
+              size: 26,
+              color: Theme.of(context).colorScheme.onBackground,
+            ),
+            title: Text(
+              'Privacy Policy',
+              style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                    color: Theme.of(context).colorScheme.onBackground,
+                    fontSize: 24,
+                  ),
+            ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) =>  PrivacyPolicyScreen()),
               );
             },
           ),
