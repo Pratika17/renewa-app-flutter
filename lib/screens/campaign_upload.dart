@@ -38,7 +38,7 @@ class _CampaignUploadScreenState extends State<CampaignUploadScreen> {
     _checkIfAlreadySubmitted();
   }
 
-Future<void> _checkIfAlreadySubmitted() async {
+  Future<void> _checkIfAlreadySubmitted() async {
   final User? user = FirebaseAuth.instance.currentUser;
   if (user == null) {
     return;
@@ -73,6 +73,8 @@ Future<void> _checkIfAlreadySubmitted() async {
           _existingImageUrl = data['photo_url'];
           _existingLocation = data['location'];
           _existingDescription = data['description'];
+          // Set the controller's text only once here.
+          _descriptionController.text = _existingDescription ?? '';
         });
       }
     }
@@ -81,7 +83,9 @@ Future<void> _checkIfAlreadySubmitted() async {
 
 
   Future<void> _uploadData() async {
-    if (_selectedImage == null || _pickedLocation == null || !_isCheckboxChecked) {
+    if (_selectedImage == null ||
+        _pickedLocation == null ||
+        !_isCheckboxChecked) {
       return;
     }
 
@@ -111,23 +115,19 @@ Future<void> _checkIfAlreadySubmitted() async {
           .child('campaign_images/${widget.campaign.title}/$fileName');
       await storageRef.putFile(_selectedImage!);
       final imageUrl = await storageRef.getDownloadURL();
-      var uuid=const Uuid().v4();
-      final campaignTitle=widget.campaign.title;
-      final datetime=DateTime.now();
-      
+      var uuid = const Uuid().v4();
+      final campaignTitle = widget.campaign.title;
+      final datetime = DateTime.now();
 
-      await FirebaseFirestore.instance
-          .collection('Submissions')
-          .doc(uuid)
-          .set({
-            'campaign_id': campaignTitle,
-            'created_at': datetime,
+      await FirebaseFirestore.instance.collection('Submissions').doc(uuid).set({
+        'campaign_id': campaignTitle,
+        'created_at': datetime,
         'photo_url': imageUrl,
-        'status':"pending",
+        'status': "pending",
         'location': _pickedLocation!.address,
         'description': _descriptionController.text,
         'user_name': username,
-        'user_email':userEmail // Use the fetched username
+        'user_email': userEmail // Use the fetched username
       });
 
       Navigator.of(context)
@@ -157,7 +157,10 @@ Future<void> _checkIfAlreadySubmitted() async {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text('Upload', style: TextStyle(fontWeight: FontWeight.bold),),
+        title: const Text(
+          'Upload',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -196,7 +199,7 @@ Future<void> _checkIfAlreadySubmitted() async {
                 ),
               const SizedBox(height: 10),
               TextField(
-                controller: _descriptionController..text = _existingDescription ?? '',
+                controller: _descriptionController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'Description (optional)',
@@ -228,13 +231,13 @@ Future<void> _checkIfAlreadySubmitted() async {
               Container(
                 alignment: Alignment.center,
                 child: ElevatedButton.icon(
-                
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromRGBO(27, 142, 123, 1),
                     foregroundColor: Colors.white,
                   ),
-                
-                  onPressed: _isCheckboxChecked && !_isAlreadySubmitted && !_isSubmitting
+                  onPressed: _isCheckboxChecked &&
+                          !_isAlreadySubmitted &&
+                          !_isSubmitting
                       ? _uploadData
                       : null,
                   icon: const Icon(Icons.arrow_forward),
