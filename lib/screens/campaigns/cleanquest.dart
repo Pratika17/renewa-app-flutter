@@ -93,8 +93,9 @@ class _CleanQuestScreenState extends State<CleanQuestScreen> {
       // No need for participants document reference. User will have a submission document
       // Navigate to the next screen
       Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => CampaignUploadScreen(campaign: widget.campaign),
-      ));
+                                  builder: (context) =>const  PassDetailsScreen(
+                                      ),
+                                ));
     } catch (e) {
       // Handle errors if needed
     } finally {
@@ -132,29 +133,16 @@ class _CleanQuestScreenState extends State<CleanQuestScreen> {
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: isJoining
-                        ? null
-                        : isCampaignOngoing
-                            ? joinQuest
-                            : () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>const  PassDetailsScreen(
-                                      ),
-                                ));
-                              },
-                    icon: isJoining
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Icon(Icons.arrow_forward),
-                    label: Text(isCampaignOngoing
-                        ? 'Join Quest'
-                        : (campaignStatus.startsWith('Upcoming')
-                            ? 'Upcoming'
-                            : 'Past')),
-                  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: isCampaignOngoing ? Colors.black : Colors.grey,
+    foregroundColor: Colors.white,
+  ),
+  onPressed: isJoining || !isCampaignOngoing ? null : joinQuest,
+  icon: isJoining
+      ? const CircularProgressIndicator(color: Colors.white)
+      : const Icon(Icons.arrow_forward),
+  label: Text(isCampaignOngoing ? 'Join Quest' : (campaignStatus.startsWith('Upcoming') ? 'Upcoming' : 'Past')),
+),
                 ],
               ),
               const SizedBox(height: 8),

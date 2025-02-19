@@ -139,25 +139,16 @@ class _CampaignQuestScreenState extends State<CampaignQuestScreen> {
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: isJoining
-                        ? null
-                        : isCampaignOngoing
-                            ? joinQuest
-                            : () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      CampaignUploadScreen(campaign: widget.campaign),
-                                ));
-                              },
-                    icon: isJoining
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Icon(Icons.arrow_forward),
-                    label: Text(isCampaignOngoing ? 'Join Quest' : (campaignStatus.startsWith('Upcoming') ? 'Upcoming' : 'Past')),
-                  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: isCampaignOngoing ? Colors.black : Colors.grey,
+    foregroundColor: Colors.white,
+  ),
+  onPressed: isJoining || !isCampaignOngoing ? null : joinQuest,
+  icon: isJoining
+      ? const CircularProgressIndicator(color: Colors.white)
+      : const Icon(Icons.arrow_forward),
+  label: Text(isCampaignOngoing ? 'Join Quest' : (campaignStatus.startsWith('Upcoming') ? 'Upcoming' : 'Past')),
+),
                 ],
               ),
               const SizedBox(height: 8),
