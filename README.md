@@ -20,6 +20,11 @@ The platform introduces a **Green Credit System** to incentivize sustainable beh
 ## 🏆 Achievements
 
 ### 🥇 National NASSCOM Thinqbator 7 Winner (2024)
+
+<p align="center">
+  <img src="./presentation/images/certificate-thingqbator.jpeg" width="400"/>
+</p>
+
 - Selected as a **national-level winner** in NASSCOM’s Thinqbator 7 innovation program  
 - Competed against **500+ student startups across India**  
 - Built an **impact-driven technology solution** addressing sustainability and civic challenges  
@@ -29,6 +34,12 @@ The platform introduces a **Green Credit System** to incentivize sustainable beh
 ---
 
 ### 🥈 PSG iTech Hackfest Finalist (2024)
+
+<p align="center">
+  <img src="./presentation/images/award_stage.jpg" width="400"/>
+  <img src="./presentation/images/certificate-psg.jpg" width="400"/>
+</p>
+
 - Finalist among **12500+ participants** in one of South India’s largest hackathons  
 - Recognized for **innovation, UI/UX, and sustainability impact**
 
