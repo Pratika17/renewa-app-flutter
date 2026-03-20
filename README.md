@@ -1,111 +1,109 @@
-# 🌱 RENEWA – Environmental Sustainability Platform
+# 🌱 RENEWA – Green Credit Management Platform
 
-A sustainability-focused digital platform that encourages individuals and communities to adopt eco-friendly practices through gamification, tracking, and rewards.
+A sustainability-driven digital platform that integrates environmental actions with financial incentives, empowering individuals and communities to adopt eco-friendly practices through eco-missions, gamification, and green credits.
+
+---
 
 ## 🔗 Quick Links
-- 💻 GitHub: https://github.com/Pratika17/renewa-app-flutter
-- 📄 Presentation: [Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)  
-- 🎥 Demo: [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
+- 💻 GitHub: https://github.com/Pratika17/renewa-app-flutter  
+- 📄 Presentation: https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf  
+- 🎥 Demo: https://www.youtube.com/watch?v=xqiPqHZQ08Y  
 
 ---
 
 ## 🚀 Overview
 
-**RENEWA** is designed to promote environmental responsibility by enabling users to participate in activities like tree plantation, water conservation, pollution reduction, and renewable energy adoption.
+RENEWA bridges sustainability and finance through a **Green Credit Management system**.  
+Users participate in structured eco-missions and green campaigns, complete tasks, submit deliverables, and earn green credits and rewards.
 
-The platform introduces a **Green Credit System** to incentivize sustainable behavior and increase community engagement.
+The platform transforms sustainability into an engaging, trackable, and rewarding experience while promoting responsible resource usage and environmental awareness.
 
 ---
 
 ## 🏆 Achievements
 
-### 🥇 National NASSCOM Thinqbator 7 Winner (2024)
-
-<p align="center">
-  <img src="./presentation/images/certificate-thingqbator.jpeg" width="400"/>
-</p>
-
-- Selected as a **national-level winner** in NASSCOM’s Thinqbator 7 innovation program  
-- Competed against **500+ student startups across India**  
-- Built an **impact-driven technology solution** addressing sustainability and civic challenges  
-- Evaluated by industry experts on **innovation, scalability, and execution**  
-- Gained exposure to **startup mentoring, product validation, and pitching**
-
----
+### 🥇 NASSCOM Thinqbator 7 Winner (2024)
+- National-level winner among 500+ startups  
+- Recognized for sustainability innovation  
+- Evaluated on impact, scalability, and execution  
 
 ### 🥈 PSG iTech Hackfest Finalist (2024)
-
-<p align="center">
-  <img src="./presentation/images/award_stage.jpeg" width="400"/>
-  <img src="./presentation/images/certificate-psg.jpeg" width="400"/>
-</p>
-
-- Finalist among **12500+ participants** in one of South India’s largest hackathons  
-- Recognized for **innovation, UI/UX, and sustainability impact**
+- Finalist among 12,500+ participants  
+- Appreciated for UI/UX and sustainability impact  
 
 ---
 
-### 🔗 Project Repository
-- GitHub: https://github.com/Pratika17/renewa-app-flutter
+## ✨ Core Features
+
+### 🌍 Eco-Missions & Green Campaigns
+- Participate in themed environmental campaigns  
+- Complete missions with defined timelines and deliverables  
+- Direct participation without complex onboarding  
+
+### 🎯 Green Credit System
+- Earn credits for eco-friendly actions  
+- Incentivizes sustainable behavior and investments  
+
+### 📊 Dashboard & Tracking
+- Track completed missions and rewards  
+- Visualize environmental impact  
+
+### 🤝 Community Engagement
+- Connects users with environmentalists and experts  
+- Encourages collaboration and awareness  
+
+### 🎮 Gamification
+- Rewards, milestones, and incentives  
+- Improves engagement and consistency  
 
 ---
 
-## ✨ Features
+## 🌿 Activities Covered
 
-* 🌳 **Eco Activity Modules**
-
-  * Tree plantation tracking
-  * Water conservation initiatives
-  * Pollution reduction activities
-  * Solar energy adoption
-
-* 🎯 **Green Credit System**
-
-  * Earn credits for sustainable actions
-  * Track contributions and progress
-
-* 📊 **Dashboard & Analytics**
-
-  * Visualize user activity
-  * Monitor environmental impact
-
-* 🎮 **Gamification**
-
-  * Incentives and rewards
-  * Encourages consistent participation
-
-* 📱 **Cross-Platform Support**
-
-  * Built for mobile/web platforms
+- Tree Plantation  
+- Water Management  
+- Sustainable Agriculture  
+- Air Pollution Reduction  
+- Mangrove Conservation  
+- Solar Energy Adoption  
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** Flutter / Web
-* **Backend:** REST APIs
-* **Architecture:** Modular, scalable design
-* **Other:** UI/UX design, gamification logic
+- Frontend: Flutter (Mobile & Web)  
+- Backend: REST APIs  
+- Architecture: Modular & scalable  
+- Other: Gamification logic, UI/UX  
 
 ---
 
 ## 📊 Presentation & Demo
 
-* 📄 **Presentation:** [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
-* 🎥 **Demo Video:** [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
+- Presentation: https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf  
+- Demo: https://www.youtube.com/watch?v=xqiPqHZQ08Y  
 
 ---
 
-## 🧾 What the Presentation Covers
+## 🔍 Use Cases
 
-* Problem statement & motivation
-* Solution architecture
-* Key features & modules
-* Tech stack
-* Demo walkthrough
-* Future improvements
+- Individuals tracking eco-friendly habits  
+- Communities promoting sustainability  
+- Organizations encouraging green practices  
+- Educational institutions for awareness  
 
 ---
+
+## 🚀 Future Enhancements
+
+- AI-based sustainability recommendations  
+- IoT integration for real-time tracking  
+- Leaderboards and social features  
+- Integration with banks for green credit scoring  
+- Government/NGO collaborations  
+
+---
+
 
 ## ⚙️ Installation & Setup
 
