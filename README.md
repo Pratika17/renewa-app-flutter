@@ -5,9 +5,9 @@ A sustainability-driven digital platform that integrates environmental actions w
 ---
 
 ## 🔗 Quick Links
-- 💻 GitHub: https://github.com/Pratika17/renewa-app-flutter  
-- 📄 Presentation: https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf  
-- 🎥 Demo: https://www.youtube.com/watch?v=xqiPqHZQ08Y  
+- 💻 GitHub: [View Here](https://github.com/Pratika17/renewa-app-flutter)
+- 📄 Presentation: [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
+- 🎥 Demo: [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
 
 ---
 
@@ -80,8 +80,8 @@ The platform transforms sustainability into an engaging, trackable, and rewardin
 
 ## 📊 Presentation & Demo
 
-- Presentation: https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf  
-- Demo: https://www.youtube.com/watch?v=xqiPqHZQ08Y  
+- Presentation: [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
+- Demo: [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
 
 ---
 
