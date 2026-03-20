@@ -31,7 +31,7 @@ Users participate in eco-missions, complete sustainability-driven tasks, and ear
 ### 🥇 NASSCOM Thinqbator 7 Winner (2024)
 
 <p align="center">
-  <img src="./presentation/images/certificate-thingqbator.jpg" width="400"/>
+  <img src="./presentation/images/certificate-thingqbator.jpeg" width="400"/>
 </p>
 
 * National-level winner among **500+ startups**
