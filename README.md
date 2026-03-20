@@ -1,113 +1,131 @@
 # 🌱 RENEWA – Green Credit Management Platform
 
-A sustainability-driven digital platform that integrates environmental actions with financial incentives, empowering individuals and communities to adopt eco-friendly practices through eco-missions, gamification, and green credits.
+<div align="center">
+  <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white">
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white">
+  <img src="https://img.shields.io/badge/NASSCOM-Winner-brightgreen?style=for-the-badge">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge">
+</div>
 
 ---
 
 ## 🔗 Quick Links
-- 💻 GitHub: [View Here](https://github.com/Pratika17/renewa-app-flutter)
-- 📄 Presentation: [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
-- 🎥 Demo: [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
+
+* 💻 GitHub: https://github.com/Pratika17/renewa-app-flutter
+* 📄 Presentation (Pitch Deck): [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
+* 🎥 Demo (Thinqbator Pitch): [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
+* 🎥 Demo (Hackathon Walkthrough): [Watch Here](https://youtu.be/euk26FyeCjY)
 
 ---
 
-## 🚀 Overview
+## 🌍 Overview
 
-RENEWA bridges sustainability and finance through a **Green Credit Management system**.  
-Users participate in structured eco-missions and green campaigns, complete tasks, submit deliverables, and earn green credits and rewards.
+RENEWA is a sustainability-driven platform that integrates **environmental actions with financial incentives** through a **Green Credit Management System**.
 
-The platform transforms sustainability into an engaging, trackable, and rewarding experience while promoting responsible resource usage and environmental awareness.
+Users participate in eco-missions, complete sustainability-driven tasks, and earn rewards—transforming environmental responsibility into an **engaging, trackable, and rewarding experience**.
 
 ---
 
 ## 🏆 Achievements
 
 ### 🥇 NASSCOM Thinqbator 7 Winner (2024)
-- National-level winner among 500+ startups  
-- Recognized for sustainability innovation  
-- Evaluated on impact, scalability, and execution  
+
+* National-level winner among **500+ startups**
+* Recognized for **sustainability innovation**
+* Evaluated on **impact, scalability, and execution**
 
 ### 🥈 PSG iTech Hackfest Finalist (2024)
-- Finalist among 12,500+ participants  
-- Appreciated for UI/UX and sustainability impact  
+
+* Finalist among **12,500+ participants**
+* Recognized for **UI/UX and product impact**
 
 ---
 
 ## ✨ Core Features
 
-### 🌍 Eco-Missions & Green Campaigns
-- Participate in themed environmental campaigns  
-- Complete missions with defined timelines and deliverables  
-- Direct participation without complex onboarding  
+### 🌍 Eco-Missions & Campaigns
+
+* Participate in structured sustainability campaigns
+* Complete missions with defined deliverables
+* Simple and direct participation model
+
+---
 
 ### 🎯 Green Credit System
-- Earn credits for eco-friendly actions  
-- Incentivizes sustainable behavior and investments  
+
+* Earn credits for eco-friendly activities
+* Encourages long-term sustainable behavior
+
+---
 
 ### 📊 Dashboard & Tracking
-- Track completed missions and rewards  
-- Visualize environmental impact  
+
+* Track completed missions and rewards
+* Visualize environmental contributions
+
+---
 
 ### 🤝 Community Engagement
-- Connects users with environmentalists and experts  
-- Encourages collaboration and awareness  
+
+* Connect users with environmental initiatives
+* Promote collaboration and awareness
+
+---
 
 ### 🎮 Gamification
-- Rewards, milestones, and incentives  
-- Improves engagement and consistency  
+
+* Rewards, milestones, and incentives
+* Improves engagement and consistency
 
 ---
 
 ## 🌿 Activities Covered
 
-- Tree Plantation  
-- Water Management  
-- Sustainable Agriculture  
-- Air Pollution Reduction  
-- Mangrove Conservation  
-- Solar Energy Adoption  
+* Tree Plantation
+* Water Management
+* Sustainable Agriculture
+* Air Pollution Reduction
+* Mangrove Conservation
+* Solar Energy Adoption
 
 ---
 
-## 🛠️ Tech Stack
+## 🏗️ Architecture
 
-- Frontend: Flutter (Mobile & Web)  
-- Backend: REST APIs  
-- Architecture: Modular & scalable  
-- Other: Gamification logic, UI/UX  
+### 🛠️ Tech Stack
+
+* **Frontend:** Flutter (Mobile & Web)
+* **Backend:** REST APIs
+* **Architecture:** Modular & scalable
+* **Other:** Gamification logic, UI/UX
+
+---
+
+### 📂 Project Structure
+
+```id="f4as9o"
+renewa/
+├── lib/
+├── assets/
+├── presentation/
+│   ├── renewa-presentation.pdf
+│   └── screenshots/
+├── README.md
+```
 
 ---
 
 ## 📊 Presentation & Demo
 
-- Presentation: [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
-- Demo: [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
+* 📄 Presentation: [View Slides](https://github.com/Pratika17/renewa-app-flutter/blob/main/presentation/Renewa-Thinqbator-Pitch.pdf)
+* 🎥 Thinqbator Pitch: [Watch Here](https://www.youtube.com/watch?v=xqiPqHZQ08Y)
+* 🎥 Hackathon Demo: [Watch Here](https://youtu.be/euk26FyeCjY)
 
 ---
 
-## 🔍 Use Cases
+## 🚀 Getting Started
 
-- Individuals tracking eco-friendly habits  
-- Communities promoting sustainability  
-- Organizations encouraging green practices  
-- Educational institutions for awareness  
-
----
-
-## 🚀 Future Enhancements
-
-- AI-based sustainability recommendations  
-- IoT integration for real-time tracking  
-- Leaderboards and social features  
-- Integration with banks for green credit scoring  
-- Government/NGO collaborations  
-
----
-
-
-## ⚙️ Installation & Setup
-
-```bash
+```bash id="b8o6le"
 # Clone the repository
 git clone https://github.com/Pratika17/renewa.git
 
@@ -123,53 +141,37 @@ flutter run
 
 ---
 
-## 📂 Project Structure
-
-```
-renewa/
-├── lib/                     # Flutter source code
-├── assets/                  # Images and static assets
-├── presentation/            # PPT, demo video, screenshots
-│   ├── renewa-presentation.pdf
-│   └── screenshots/
-├── README.md
-```
-
----
-
 ## 🔍 Use Cases
 
 * Individuals tracking eco-friendly habits
-* Communities promoting sustainability initiatives
+* Communities promoting sustainability
 * Organizations encouraging green practices
-* Educational institutions for awareness programs
+* Educational institutions for awareness
 
 ---
 
 ## 🚀 Future Enhancements
 
 * AI-based sustainability recommendations
-* Integration with IoT devices for real-time tracking
-* Social features (leaderboards, challenges)
-* Government/NGO collaboration modules
+* IoT integration for real-time tracking
+* Leaderboards and social features
+* Green credit financial integrations
+* Government/NGO collaborations
 
 ---
 
 ## 🤝 Contribution
 
-Contributions are welcome!
-
 1. Fork the repository
-2. Create a new branch (`feature/your-feature`)
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+2. Create branch (`feature/your-feature`)
+3. Commit changes
+4. Push & open PR
 
 ---
 
 ## 📜 License
 
-This project is open-source and available under the MIT License.
+MIT License
 
 ---
 
@@ -182,6 +184,6 @@ This project is open-source and available under the MIT License.
 
 ---
 
-## ⭐ Support
-
-If you found this project useful, consider giving it a ⭐ on GitHub!
+<div align="center">
+  <p><strong>Building a sustainable future through technology 🌱</strong></p>
+</div>
