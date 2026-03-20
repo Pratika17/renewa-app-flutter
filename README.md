@@ -30,11 +30,20 @@ Users participate in eco-missions, complete sustainability-driven tasks, and ear
 
 ### 🥇 NASSCOM Thinqbator 7 Winner (2024)
 
+<p align="center">
+  <img src="./presentation/images/certificate-thingqbator.jpg" width="400"/>
+</p>
+
 * National-level winner among **500+ startups**
 * Recognized for **sustainability innovation**
 * Evaluated on **impact, scalability, and execution**
 
 ### 🥈 PSG iTech Hackfest Finalist (2024)
+
+<p align="center">
+  <img src="./presentation/images/award_stage.jpeg" width="400"/>
+  <img src="./presentation/images/certificate-psg.jpeg" width="400"/>
+</p>
 
 * Finalist among **12,500+ participants**
 * Recognized for **UI/UX and product impact**
